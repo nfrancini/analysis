@@ -16,7 +16,7 @@ def xi_analysis(j_min, j_max, l_min, n_term_min, n_term_max):
         return poly
 
     # APRO I VARI FILE DA ANALIZZARE E CREO UN UNICO BLOCCO
-    L, J, K, ene_sp, err_ene_sp, ene_g, err_ene_g, ene_dens, err_ene_dens, susc, err_susc, G_pm, err_G_pm, C, err_C, U, err_U, corr_len, err_corr_len = np.genfromtxt("./temp.dat", delimiter ="\t", unpack = True)
+    L, J, K, ene_sp, err_ene_sp, ene_g, err_ene_g, ene_dens, err_ene_dens, susc, err_susc, G_pm, err_G_pm, C, err_C, U, err_U, corr_len, err_corr_len, K2, err_K2, K3, err_K3, K4, err_K4 = np.genfromtxt("./temp.dat", delimiter ="\t", unpack = True)
 
     # TAGLIO LE MISURE ENTRO L'INTERVALLO DESIDERATO
     mask = ((J>=j_min) & (J<=j_max) & (L>=l_min))
@@ -80,7 +80,7 @@ def xi_analysis_corrections(j_min, j_max, l_min, n_term_min, n_term_max, omega_m
         return poly
 
     # APRO I VARI FILE DA ANALIZZARE E CREO UN UNICO BLOCCO
-    L, J, K, ene_sp, err_ene_sp, ene_g, err_ene_g, ene_dens, err_ene_dens, susc, err_susc, G_pm, err_G_pm, C, err_C, U, err_U, corr_len, err_corr_len = np.genfromtxt("./temp.dat", delimiter ="\t", unpack = True)
+    L, J, K, ene_sp, err_ene_sp, ene_g, err_ene_g, ene_dens, err_ene_dens, susc, err_susc, G_pm, err_G_pm, C, err_C, U, err_U, corr_len, err_corr_len, K2, err_K2, K3, err_K3, K4, err_K4 = np.genfromtxt("./temp.dat", delimiter ="\t", unpack = True)
 
     # TAGLIO LE MISURE ENTRO L'INTERVALLO DESIDERATO
     mask = ((J>=j_min) & (J<=j_max) & (L>=l_min))

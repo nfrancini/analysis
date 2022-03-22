@@ -161,7 +161,7 @@ c_cycle, m_cycle = set_style()
 
 for fname in path_filenames:
     with open(fname) as infile:
-        aux_L, aux_J, aux_K, aux_ene_sp, aux_err_ene_sp, aux_ene_g, aux_err_ene_g, aux_ene_dens, aux_err_ene_dens, aux_susc, aux_err_susc, aux_G_pm, aux_err_G_pm, aux_C, aux_err_C, aux_U, aux_err_U, aux_corr_len, aux_err_corr_len = np.genfromtxt(infile, delimiter ="\t", unpack = True)
+        aux_L, aux_J, aux_K, aux_ene_sp, aux_err_ene_sp, aux_ene_g, aux_err_ene_g, aux_ene_dens, aux_err_ene_dens, aux_susc, aux_err_susc, aux_G_pm, aux_err_G_pm, aux_C, aux_err_C, aux_U, aux_err_U, aux_corr_len, aux_err_corr_len, aux_K2, aux_err_K2, aux_K3, aux_err_K3, aux_K4, aux_err_K4 = np.genfromtxt(infile, delimiter ="\t", unpack = True)
 
         c = next(c_cycle)
         m = next(m_cycle)

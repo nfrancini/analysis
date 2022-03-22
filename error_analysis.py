@@ -40,6 +40,15 @@ def media(obs):
 def specific_heat(obs):
     return V*(np.mean(obs**2) - (np.mean(obs))**2)
 
+def K2(obs):
+    return (np.mean(obs**2) - np.mean(obs)**2)*(V**2)
+
+def K3(obs):
+    return (np.mean(obs**3) - 3*np.mean(obs**2)*np.mean(obs) + 2*np.mean(obs)**3)*(V**3)
+
+def K4(obs):
+    return (np.mean(obs**4) - 4*np.mean(obs**3)*np.mean(obs) + 12*np.mean(obs**2)*(np.mean(obs)**2) - 3*np.mean(obs**2)**2 - 6*np.mean(obs)**4)*(V**4)
+
 def binder(obs):
     return (np.mean(obs**2))/((np.mean(obs))**2)
 
@@ -78,6 +87,9 @@ for fname in path_filenames:
     err_spec_heat = np.zeros(0)
     err_binder = np.zeros(0)
     err_corr_len = np.zeros(0)
+    err_K2 = np.zeros(0)
+    err_K3 = np.zeros(0)
+    err_K4 = np.zeros(0)
 
     # FACCIO DUE VOLTE LA PROCEDURA DI JACKKNIFE E POI MEDIO SU DUE TAGLIE DIVERSE
     taglie = np.array([len(ene_dens)//500])
@@ -91,6 +103,9 @@ for fname in path_filenames:
         err_spec_heat = np.append(err_spec_heat, jack_error_1obs(specific_heat, ene_dens, size))
         err_binder = np.append(err_binder, jack_error_1obs(binder, mu2, size))
         err_corr_len = np.append(err_corr_len, jack_error_2obs(corr_lenght, susc, G_pm, size))
+        err_K2 = np.append(err_K2, jack_error_1obs(K2, ene_dens, size))
+        err_K3 = np.append(err_K3, jack_error_1obs(K3, ene_dens, size))
+        err_K4 = np.append(err_K4, jack_error_1obs(K4, ene_dens, size))
 
     # STAMPO SU FILE I RISULTATI NEL FORMATO ENE_SP, ENE_G, ENE_DENS, SUSC, GPM, C, BINDER, CSI
     if(os.path.isdir('./data_w_errors') == True):
@@ -120,7 +135,13 @@ for fname in path_filenames:
     output_file.write(str(binder(mu2)) + '\t')              # COLONNA 16
     output_file.write(str(np.mean(err_binder)) +'\t')       # COLONNA 17
     output_file.write(str(corr_lenght(susc, G_pm)) + '\t')  # COLONNA 18
-    output_file.write(str(np.mean(err_corr_len)) + '\n')    # COLONNA 19
+    output_file.write(str(np.mean(err_corr_len)) + '\t')    # COLONNA 19
+    output_file.write(str(K2(ene_dens)) + '\t')             # COLONNA 20
+    output_file.write(str(np.mean(err_K2)) + '\t')          # COLONNA 21
+    output_file.write(str(K3(ene_dens)) + '\t')             # COLONNA 22
+    output_file.write(str(np.mean(err_K3)) + '\t')          # COLONNA 23
+    output_file.write(str(K4(ene_dens)) + '\t')             # COLONNA 24
+    output_file.write(str(np.mean(err_K4)) + '\n')          # COLONNA 25
 
     output_file.close()
 
