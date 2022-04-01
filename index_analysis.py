@@ -57,7 +57,8 @@ with open("./temp.dat", "w") as tempfile:
 # IMPOSTARE QUI QUALE ANALISI SI VUOLE EFFETTUARE
 an_xi = False
 an_susc = False
-an_cumul = False
+an_cumul_K2 = False
+an_cumul_K3 = False
 an_binder = True
 FO_intersect = True
 
@@ -144,59 +145,84 @@ if(an_susc == True):
 # PER IL MOMENTO SENZA CORREZIONI
 # POI INTRODUCO LE CORREZIONI SUCCESSIVAMENTE
 
-if(an_cumul == True):
+if(an_cumul_K2 == True):
     k_min = 0.05
     k_max = 0.10
 
     l_min = 7
 
     n_term_min = 8
-    n_term_max = 24
+    n_term_max = 15
 
     popt_K2, err_opt_K2, n_term_K2, red_chisq_opt_K2 = K2_analysis(k_min, k_max, l_min, n_term_min, n_term_max)
-    popt_K3, err_opt_K3, n_term_K3, red_chisq_opt_K3 = K3_analysis(k_min, k_max, l_min, n_term_min, n_term_max)
 
-# ANALISI DEI CUMULANTI
-# METTO ANCHE LE CORREZIONI
-
-if(an_cumul == True):
+if(an_cumul_K3 == True):
     k_min = 0.05
     k_max = 0.10
 
     l_min = 7
 
-    n_term_min = 6
-    n_term_max = 12
+    n_term_min = 8
+    n_term_max = 15
+
+    popt_K3, err_opt_K3, n_term_K3, red_chisq_opt_K3 = K3_analysis(k_min, k_max, l_min, n_term_min, n_term_max)
+
+# ANALISI DEI CUMULANTI
+# METTO ANCHE LE CORREZIONI
+
+if(an_cumul_K2 == True):
+    k_min = 0.060
+    k_max = 0.09
+
+    l_min = 9
+
+    n_term_min = 2
+    n_term_max = 8
 
     omega_min = 0.5
-    omega_max = 1.5
-    omega_step = 0.1
+    omega_max = 1.0
+    omega_step = 0.05
 
     eps = 100
 
-    plot_params_K2, n_term1_K2, n_term2_K2, omega_plot_K2, mean_Kc_K2, std_Kc_K2, mean_yk_K2, std_yk_K2, mean_theta2, std_theta2, mean_chisq_red_K2 = K2_analysis_corrections(k_min, k_max, l_min, n_term_min, n_term_max, omega_min, omega_max, omega_step, eps)
+    plot_params_K2, n_term1_K2, n_term2_K2, n_term_K3, omega_plot_K2, mean_Kc_K2, std_Kc_K2, mean_yk_K2, std_yk_K2, mean_chisq_red_K2 = K2_analysis_corrections(k_min, k_max, l_min, n_term_min, n_term_max, omega_min, omega_max, omega_step, eps)
+
+if(an_cumul_K3 == True):
+    k_min = 0.060
+    k_max = 0.09
+
+    l_min = 9
+
+    n_term_min = 2
+    n_term_max = 8
+
+    omega_min = 0.5
+    omega_max = 1.0
+    omega_step = 0.05
+
+    eps = 100
+
     plot_params_K3, n_term1_K3, n_term2_K3, omega_plot_K3, mean_Kc_K3, std_Kc_K3, mean_yk_K3, std_yk_K3, mean_theta3, std_theta3, mean_chisq_red_K3 = K3_analysis_corrections(k_min, k_max, l_min, n_term_min, n_term_max, omega_min, omega_max, omega_step, eps)
+
 
 # ANALISI DELLA TRANSIZIONE  DI PRIMO ORDINE
 if(FO_intersect ==  True):
 
     ctrl_plot = False
 
-    j_min = 0.32
-    j_max = 0.38
+    j_min = 0.320
+    j_max = 0.384
 
-    n_term_min = 5
-    n_term_max = 10
+    n_term_min = 2
+    n_term_max = 11
 
     inter_min = 0.34
     inter_max = 0.36
 
     mean_intersect, err_intersect, n_term_FO = FO_intersection(path_filenames, j_min, j_max, n_term_min, n_term_max, inter_min, inter_max, ctrl_plot)
-    print(mean_intersect, err_intersect)
-
 
 # PULISCO IL TERMINALE DALLE BARRE DI CARICAMENTO
-os.system('cls' if os.name == 'nt' else 'clear')
+# os.system('cls' if os.name == 'nt' else 'clear')
 
 # STAMPO I RISULTATI
 if (an_xi == True):
@@ -238,13 +264,13 @@ if(an_susc == True):
     # print("termini polinomio con correzione %d" % (n_term2_susc))
     print("-----------------------------------------------------")
 
-if(an_cumul == True):
+if(an_cumul_K2 == True):
     print("-----------------------------------------------------")
     print("K2: RISULTATI SENZA CORREZIONE")
     print("-----------------------------------------------------")
     print("Kc = %f +- %f" % (popt_K2[0], err_opt_K2[0]))
     print("y_k = %f +- %f" % (popt_K2[1], err_opt_K2[1]))
-    print("theta_3 = %f +- %f" % (popt_K2[2], err_opt_K2[2]))
+    print("theta_2 = %f +- %f" % (popt_K2[2], err_opt_K2[2]))
     print("red_chisq = %f" % (red_chisq_opt_K2))
     print("termini polinomio %d" % (n_term_K2))
     print("-----------------------------------------------------")
@@ -254,12 +280,15 @@ if(an_cumul == True):
     print("-----------------------------------------------------")
     print("Kc (medio) = %f +- %f" % (mean_Kc_K2, std_Kc_K2))
     print("y_k (medio) = %f +- %f" % (mean_yk_K2, std_yk_K2))
-    print("theta_3 (medio) = %f +- %f" % (mean_theta2, std_theta2))
+    # print("theta_2 (medio) = %f +- %f" % (mean_theta2, std_theta2))
     print("red_chisq = %f" % (mean_chisq_red_K2))
+    print("omega = %f" % (omega_plot_K2))
     print("termini polinomio senza correzione %d" % (n_term1_K2))
     print("termini polinomio con correzione %d" % (n_term2_K2))
+    print("termini polinomio parte di background %d" % (n_term_K2))
     print("-----------------------------------------------------")
 
+if(an_cumul_K3 == True):
     print("-----------------------------------------------------")
     print("K3: RISULTATI SENZA CORREZIONE")
     print("-----------------------------------------------------")
@@ -294,10 +323,15 @@ c_cycle, m_cycle = set_style()
 
 for fname in path_filenames:
     with open(fname) as infile:
-        aux_L, aux_J, aux_K, aux_ene_sp, aux_err_ene_sp, aux_ene_g, aux_err_ene_g, aux_ene_dens, aux_err_ene_dens, aux_susc, aux_err_susc, aux_G_pm, aux_err_G_pm, aux_C, aux_err_C, aux_U, aux_err_U, aux_corr_len, aux_err_corr_len, aux_K2, aux_err_K2, aux_K3, aux_err_K3, aux_K4, aux_err_K4 = np.genfromtxt(infile, delimiter ="\t", unpack = True)
+        aux_L, aux_J, aux_K, aux_ene_sp, aux_err_ene_sp, aux_ene_g, aux_err_ene_g, aux_ene_dens, aux_err_ene_dens, aux_susc, aux_err_susc, aux_G_pm, aux_err_G_pm, aux_C, aux_err_C, aux_U, aux_err_U, aux_corr_len, aux_err_corr_len, aux_K2_g, aux_err_K2_g, aux_K2_sp, aux_err_K2_sp, aux_K3_g, aux_err_K3_g, aux_K3_sp, aux_err_K3_sp = np.genfromtxt(infile, delimiter ="\t", unpack = True)
 
         c = next(c_cycle)
         m = next(m_cycle)
+        # pl.figure(10)
+        # pl.errorbar(aux_K, aux_ene_dens, aux_err_ene_dens, ls='', color = c, marker = m, fillstyle = 'none', label = 'L=' + str(int(aux_L[0])))
+        # pl.xlabel(r'$\kappa$')
+        # pl.ylabel(r'$\epsilon$')
+        # pl.legend()
 
         # LUNGHEZZA DI CORRELAZIONE (PER ADESSO SOLO CON CORREZIONI)
         if(an_xi == True):
@@ -336,6 +370,21 @@ for fname in path_filenames:
             pl.legend()
             pl.savefig('scaling_susc_k=0.pdf')
 
+        # CUMULANTI
+        # if(an_cumul == True):
+        #     fig_8 = pl.figure(8)
+        #     pl.errorbar((aux_K-mean_Kc_K2)*(aux_L)**(mean_yk_K2), aux_K2/(aux_L**(2*mean_yk_K2)), aux_err_K2/(aux_L**mean_theta2), ls = '', color = c, marker = m, fillstyle = 'none', label = 'L=' + str(int(aux_L[0])))
+        #     pl.xlabel(r'$(\kappa -\kappa_c)L^y_k$')
+        #     pl.ylabel(r'$K_2/L^{\theta_2}$')
+        #     pl.legend()
+        #
+        #     fig_9 = pl.figure(9)
+        #     pl.errorbar((aux_K-mean_Kc_K3)*(aux_L)**(mean_yk_K3), aux_K3/(aux_L**mean_theta3), aux_err_K3/(aux_L**mean_theta3), ls = '', color = c, marker = m, fillstyle = 'none', label = 'L=' + str(int(aux_L[0])))
+        #     pl.xlabel(r'$(\kappa - \kappa_c)L^y_k$')
+        #     pl.ylabel(r'$K_3/L^{\theta_3}$')
+        #     pl.legend()
+
+
         # BINDER
         if(an_binder == True):
 
@@ -344,6 +393,7 @@ for fname in path_filenames:
             pl.xlabel(r'$R_{\xi}$')
             pl.ylabel(r'$U$')
             pl.legend()
+            # pl.savefig('./grafici/k=0.4/binder_FO_scaling.pdf')
 
             if(FO_intersect == True):
                 fig_7 = pl.figure(7)
@@ -354,6 +404,7 @@ for fname in path_filenames:
                 pl.xlabel(r'$J$')
                 pl.ylabel(r'$U$')
                 pl.legend()
+                # pl.savefig('./grafici/k=0.4/binder_intersect.pdf')
 
 pl.show()
 

@@ -6,7 +6,7 @@ from tqdm import tqdm
 
 
 # DEFINISCO LA FUNZIONE DI ANALISI
-def susc_analysis(j_min, j_max, l_min, n_term_min, n_term_max):
+def susc_analysis(j_min, j_max, l_min, n_term_min, n_term_max, eta_init):
     # DEFINISCO LA FUNZIONE DI FIT
     def poly_odr(pars, x):
         poly = 0
@@ -15,7 +15,8 @@ def susc_analysis(j_min, j_max, l_min, n_term_min, n_term_max):
         return (x[1]**(2-pars[0]))*poly
 
     # APRO I VARI FILE DA ANALIZZARE E CREO UN UNICO BLOCCO
-    L, J, K, ene_sp, err_ene_sp, ene_g, err_ene_g, ene_dens, err_ene_dens, susc, err_susc, G_pm, err_G_pm, C, err_C, U, err_U, corr_len, err_corr_len, K2, err_K2, K3, err_K3, K4, err_K4 = np.genfromtxt("./temp.dat", delimiter ="\t", unpack = True)
+    # L, J, K, ene_sp, err_ene_sp, ene_g, err_ene_g, ene_dens, err_ene_dens, susc, err_susc, G_pm, err_G_pm, C, err_C, U, err_U, corr_len, err_corr_len, K2_g, err_K2_g, K2_sp, err_K2_sp, K3_g, err_K3_g, K3_sp, err_K3_sp = np.genfromtxt("./temp.dat", delimiter ="\t", unpack = True)
+    L, J, K, ene_sp, err_ene_sp, ene_g, err_ene_g, ene_dens, err_ene_dens, susc, err_susc, G_pm, err_G_pm, C, err_C, U, err_U, corr_len, err_corr_len = np.genfromtxt("./temp.dat", delimiter ="\t", unpack = True)
 
     # PROVO IL FIT PER LA SUSCETTIVITÀ, USO ODR PER TENERE IN CONTO
     # DEGLI ERRORI SULLA LUNGHEZZA DI CORRELAZIONE CHE FA DA VARIABILE INDIPENDENTE
@@ -42,7 +43,7 @@ def susc_analysis(j_min, j_max, l_min, n_term_min, n_term_max):
     # CICLO SUL NUMERO DI TERMINI DEL POLINIMIO
     for n_term in tqdm(range(n_term_min, n_term_max), desc = 'susc_fit_no_corrections'):
         c = np.ones(n_term)
-        init_odr = [0.03078, *c]
+        init_odr = [eta_init, *c]
         x = np.row_stack( (corr_len/L, L) )
         sigma_x = np.row_stack( (err_corr_len/L, L*realEps)) # ERRORI FITTIZI SULLA L
 
@@ -71,7 +72,7 @@ def susc_analysis(j_min, j_max, l_min, n_term_min, n_term_max):
 
     return popt, err_opt, n_term_susc, red_chisq_opt
 
-def susc_analysis_corrections(j_min, j_max, l_min, n_term_min, n_term_max, omega_min, omega_max, omega_step, eps):
+def susc_analysis_corrections(j_min, j_max, l_min, n_term_min, n_term_max, omega_min, omega_max, omega_step, eps, eta_init):
     # DEFINISCO LA FUNZIONE DI FIT
     def poly_odr_corrections(pars, x):
         poly = 0
@@ -82,7 +83,8 @@ def susc_analysis_corrections(j_min, j_max, l_min, n_term_min, n_term_max, omega
         return (x[1]**(2-pars[0]))*poly
 
     # APRO I VARI FILE DA ANALIZZARE E CREO UN UNICO BLOCCO
-    L, J, K, ene_sp, err_ene_sp, ene_g, err_ene_g, ene_dens, err_ene_dens, susc, err_susc, G_pm, err_G_pm, C, err_C, U, err_U, corr_len, err_corr_len, K2, err_K2, K3, err_K3, K4, err_K4 = np.genfromtxt("./temp.dat", delimiter ="\t", unpack = True)
+    # L, J, K, ene_sp, err_ene_sp, ene_g, err_ene_g, ene_dens, err_ene_dens, susc, err_susc, G_pm, err_G_pm, C, err_C, U, err_U, corr_len, err_corr_len, K2_g, err_K2_g, K2_sp, err_K2_sp, K3_g, err_K3_g, K3_sp, err_K3_sp = np.genfromtxt("./temp.dat", delimiter ="\t", unpack = True)
+    L, J, K, ene_sp, err_ene_sp, ene_g, err_ene_g, ene_dens, err_ene_dens, susc, err_susc, G_pm, err_G_pm, C, err_C, U, err_U, corr_len, err_corr_len = np.genfromtxt("./temp.dat", delimiter ="\t", unpack = True)
 
     # PROVO IL FIT PER LA SUSCETTIVITÀ, USO ODR PER TENERE IN CONTO
     # DEGLI ERRORI SULLA LUNGHEZZA DI CORRELAZIONE CHE FA DA VARIABILE INDIPENDENTE
@@ -110,7 +112,7 @@ def susc_analysis_corrections(j_min, j_max, l_min, n_term_min, n_term_max, omega
         for n_term1 in range(n_term_min, n_term_max):
             for n_term2 in range(n_term_min, n_term_max):
                 c = np.zeros(n_term1 + n_term2)
-                init_odr = [0.03078, *c]
+                init_odr = [eta_init, *c]
                 fixed = np.row_stack((a , b) )          # USO QUESTO PER FISSARE GLI ERRORI DI L A ZERO
                 model = odrpack.Model(poly_odr_corrections)
                 x = np.row_stack((corr_len/L, L))

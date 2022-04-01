@@ -50,7 +50,8 @@ def FO_intersection(path_filenames, j_min, j_max, n_term_min, n_term_max, inter_
     n_term2 = n_term_max
     for fname in path_filenames:
         with open(fname) as infile:
-            aux_L, aux_J, aux_K, aux_ene_sp, aux_err_ene_sp, aux_ene_g, aux_err_ene_g, aux_ene_dens, aux_err_ene_dens, aux_susc, aux_err_susc, aux_G_pm, aux_err_G_pm, aux_C, aux_err_C, aux_U, aux_err_U, aux_corr_len, aux_err_corr_len, aux_K2, aux_err_K2, aux_K3, aux_err_K3, aux_K4, aux_err_K4 = np.genfromtxt(infile, delimiter ="\t", unpack = True)
+            # aux_L, aux_J, aux_K, aux_ene_sp, aux_err_ene_sp, aux_ene_g, aux_err_ene_g, aux_ene_dens, aux_err_ene_dens, aux_susc, aux_err_susc, aux_G_pm, aux_err_G_pm, aux_C, aux_err_C, aux_U, aux_err_U, aux_corr_len, aux_err_corr_len, aux_K2_g, aux_err_K2_g, aux_K2_sp, aux_err_K2_sp, aux_K3_g, aux_err_K3_g, aux_K3_sp, aux_err_K3_sp = np.genfromtxt(infile, delimiter ="\t", unpack = True)
+            aux_L, aux_J, aux_K, aux_ene_sp, aux_err_ene_sp, aux_ene_g, aux_err_ene_g, aux_ene_dens, aux_err_ene_dens, aux_susc, aux_err_susc, aux_G_pm, aux_err_G_pm, aux_C, aux_err_C, aux_U, aux_err_U, aux_corr_len, aux_err_corr_len = np.genfromtxt(infile, delimiter ="\t", unpack = True)
 
             sorted_J = aux_J[aux_J.argsort()]
             sorted_U = aux_U[aux_J.argsort()]
@@ -65,7 +66,7 @@ def FO_intersection(path_filenames, j_min, j_max, n_term_min, n_term_max, inter_
             # FARE PLOT DI CONTROLLO
             if(ctrl_plot == True):
                 curve = np.polynomial.Polynomial(p)
-                x = np.linspace(min(sorted_J), max(sorted_J), 500)
+                x = np.linspace(j_min, j_max, 500)
                 pl.errorbar(sorted_J, sorted_U, sorted_err_U, ls = '', fillstyle = 'none', label = 'L='+str(int(aux_L[0])))
                 pl.plot(x, curve(x))
                 pl.legend()
@@ -74,7 +75,6 @@ def FO_intersection(path_filenames, j_min, j_max, n_term_min, n_term_max, inter_
     intersection = np.array([])
 
     for i in range(len(coeffs)-1):
-        print(i)
         roots = np.polynomial.polynomial.Polynomial.roots(np.polynomial.Polynomial(coeffs[i+1]) - np.polynomial.Polynomial(coeffs[i]))
         roots = np.real(roots[np.isreal(roots)])
         mask = ((roots>=inter_min) & (roots<=inter_max))

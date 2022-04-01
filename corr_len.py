@@ -6,7 +6,7 @@ from tqdm import tqdm
 import time
 
 # DEFINISCO LA FUNZIONE DI ANALISI
-def xi_analysis(j_min, j_max, l_min, n_term_min, n_term_max):
+def xi_analysis(j_min, j_max, l_min, n_term_min, n_term_max, jc_init, nu_init):
     # DEFINISCO LE FUNZIONI DI FIT
     def poly(X, a, b, *c):
         j,l = X
@@ -16,7 +16,8 @@ def xi_analysis(j_min, j_max, l_min, n_term_min, n_term_max):
         return poly
 
     # APRO I VARI FILE DA ANALIZZARE E CREO UN UNICO BLOCCO
-    L, J, K, ene_sp, err_ene_sp, ene_g, err_ene_g, ene_dens, err_ene_dens, susc, err_susc, G_pm, err_G_pm, C, err_C, U, err_U, corr_len, err_corr_len, K2, err_K2, K3, err_K3, K4, err_K4 = np.genfromtxt("./temp.dat", delimiter ="\t", unpack = True)
+    # L, J, K, ene_sp, err_ene_sp, ene_g, err_ene_g, ene_dens, err_ene_dens, susc, err_susc, G_pm, err_G_pm, C, err_C, U, err_U, corr_len, err_corr_len, K2_g, err_K2_g, K2_sp, err_K2_sp, K3_g, err_K3_g, K3_sp, err_K3_sp = np.genfromtxt("./temp.dat", delimiter ="\t", unpack = True)
+    L, J, K, ene_sp, err_ene_sp, ene_g, err_ene_g, ene_dens, err_ene_dens, susc, err_susc, G_pm, err_G_pm, C, err_C, U, err_U, corr_len, err_corr_len = np.genfromtxt("./temp.dat", delimiter ="\t", unpack = True)
 
     # TAGLIO LE MISURE ENTRO L'INTERVALLO DESIDERATO
     mask = ((J>=j_min) & (J<=j_max) & (L>=l_min))
@@ -35,7 +36,7 @@ def xi_analysis(j_min, j_max, l_min, n_term_min, n_term_max):
     coeff = []
 
     c = np.ones(n_term_min)/2.0
-    initParam = [0.70, 0.7117, *c]
+    initParam = [jc_init, nu_init, *c]
 
     # CICLO SUL NUMERO DI TERMINI DEL POLINOMIO
     for n_term in tqdm(range(n_term_min, n_term_max), desc = 'xi_fit_no_corrections'):
@@ -69,7 +70,7 @@ def xi_analysis(j_min, j_max, l_min, n_term_min, n_term_max):
     return popt, err_opt, n_term_csi, red_chisq_opt
 
 # DEFINISCO LA FUNZIONE DI ANALISI CON CORREZIONI
-def xi_analysis_corrections(j_min, j_max, l_min, n_term_min, n_term_max, omega_min, omega_max, omega_step, eps):
+def xi_analysis_corrections(j_min, j_max, l_min, n_term_min, n_term_max, omega_min, omega_max, omega_step, eps, jc_init, nu_init):
     def poly_corrections(X, a, b, *c):
         j,l = X
         poly = 0
@@ -80,7 +81,8 @@ def xi_analysis_corrections(j_min, j_max, l_min, n_term_min, n_term_max, omega_m
         return poly
 
     # APRO I VARI FILE DA ANALIZZARE E CREO UN UNICO BLOCCO
-    L, J, K, ene_sp, err_ene_sp, ene_g, err_ene_g, ene_dens, err_ene_dens, susc, err_susc, G_pm, err_G_pm, C, err_C, U, err_U, corr_len, err_corr_len, K2, err_K2, K3, err_K3, K4, err_K4 = np.genfromtxt("./temp.dat", delimiter ="\t", unpack = True)
+    # L, J, K, ene_sp, err_ene_sp, ene_g, err_ene_g, ene_dens, err_ene_dens, susc, err_susc, G_pm, err_G_pm, C, err_C, U, err_U, corr_len, err_corr_len, K2_g, err_K2_g, K2_sp, err_K2_sp, K3_g, err_K3_g, K3_sp, err_K3_sp = np.genfromtxt("./temp.dat", delimiter ="\t", unpack = True)
+    L, J, K, ene_sp, err_ene_sp, ene_g, err_ene_g, ene_dens, err_ene_dens, susc, err_susc, G_pm, err_G_pm, C, err_C, U, err_U, corr_len, err_corr_len = np.genfromtxt("./temp.dat", delimiter ="\t", unpack = True)
 
     # TAGLIO LE MISURE ENTRO L'INTERVALLO DESIDERATO
     mask = ((J>=j_min) & (J<=j_max) & (L>=l_min))
@@ -100,13 +102,13 @@ def xi_analysis_corrections(j_min, j_max, l_min, n_term_min, n_term_max, omega_m
     coeff = []
 
     c = np.zeros(n_term_min+n_term_min, dtype = 'float')
-    initParam = [0.70, 0.7117, *c]
+    initParam = [jc_init, nu_init, *c]
     for omega in tqdm(np.arange(omega_min, omega_max, omega_step), desc = 'xi_fit_w_corrections'):
         for n_term1 in range(n_term_min, n_term_max):
             for n_term2 in range(n_term_min, n_term_max):
                 inf_bounds = -np.ones(n_term1 + n_term2)
                 sup_bounds = np.ones(n_term1 + n_term2)
-                popt, pcov = curve_fit(poly_corrections, (J,L), corr_len/L, p0 = initParam, sigma = err_corr_len/L, absolute_sigma = True, bounds = ((0.690, 0.700, *inf_bounds), (0.710, 0.720, *sup_bounds)))
+                popt, pcov = curve_fit(poly_corrections, (J,L), corr_len/L, p0 = initParam, sigma = err_corr_len/L, absolute_sigma = True, bounds = ((0.690, 0.700, *inf_bounds), (0.715, 0.730, *sup_bounds)))
 
                 initParam = popt
                 initParam = np.append(initParam, 0.0)
@@ -129,10 +131,10 @@ def xi_analysis_corrections(j_min, j_max, l_min, n_term_min, n_term_max, omega_m
                 coeff.append(popt[2:])
 
             c = np.zeros(n_term1+n_term_min+1, dtype = 'float')
-            initParam = [0.70, 0.7117, *c]
+            initParam = [jc_init, nu_init, *c]
 
         c = np.zeros(n_term_min+n_term_min, dtype = 'float')
-        initParam = [0.70, 0.7117, *c]
+        initParam = [jc_init, nu_init, *c]
 
     # PARAMETRI OTTIMALI DA RESTITUIRE
     # NEI PASSI SEGUENTI TENGO CONTO
