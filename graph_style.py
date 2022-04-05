@@ -10,6 +10,7 @@ def set_style():
 
     pl.rc('text', usetex = True)
     pl.rc('font', family = 'serif', size = 15)
+    pl.rc('figure', autolayout = True)
     pl.rc('lines', linestyle = '-', linewidth = 1)
     pl.rc('markers', fillstyle = 'none')
     pl.rc('axes', labelsize = 'large')

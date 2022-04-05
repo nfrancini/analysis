@@ -16,8 +16,8 @@ def xi_analysis(j_min, j_max, l_min, n_term_min, n_term_max, jc_init, nu_init):
         return poly
 
     # APRO I VARI FILE DA ANALIZZARE E CREO UN UNICO BLOCCO
-    # L, J, K, ene_sp, err_ene_sp, ene_g, err_ene_g, ene_dens, err_ene_dens, susc, err_susc, G_pm, err_G_pm, C, err_C, U, err_U, corr_len, err_corr_len, K2_g, err_K2_g, K2_sp, err_K2_sp, K3_g, err_K3_g, K3_sp, err_K3_sp = np.genfromtxt("./temp.dat", delimiter ="\t", unpack = True)
-    L, J, K, ene_sp, err_ene_sp, ene_g, err_ene_g, ene_dens, err_ene_dens, susc, err_susc, G_pm, err_G_pm, C, err_C, U, err_U, corr_len, err_corr_len = np.genfromtxt("./temp.dat", delimiter ="\t", unpack = True)
+    L, J, K, ene_sp, err_ene_sp, ene_g, err_ene_g, ene_dens, err_ene_dens, susc, err_susc, G_pm, err_G_pm, C, err_C, U, err_U, corr_len, err_corr_len, K2_g, err_K2_g, K2_sp, err_K2_sp, K3_g, err_K3_g, K3_sp, err_K3_sp = np.genfromtxt("./temp.dat", delimiter ="\t", unpack = True)
+    # L, J, K, ene_sp, err_ene_sp, ene_g, err_ene_g, ene_dens, err_ene_dens, susc, err_susc, G_pm, err_G_pm, C, err_C, U, err_U, corr_len, err_corr_len = np.genfromtxt("./temp.dat", delimiter ="\t", unpack = True)
 
     # TAGLIO LE MISURE ENTRO L'INTERVALLO DESIDERATO
     mask = ((J>=j_min) & (J<=j_max) & (L>=l_min))
@@ -70,7 +70,7 @@ def xi_analysis(j_min, j_max, l_min, n_term_min, n_term_max, jc_init, nu_init):
     return popt, err_opt, n_term_csi, red_chisq_opt
 
 # DEFINISCO LA FUNZIONE DI ANALISI CON CORREZIONI
-def xi_analysis_corrections(j_min, j_max, l_min, n_term_min, n_term_max, omega_min, omega_max, omega_step, eps, jc_init, nu_init):
+def xi_analysis_corrections(j_min, j_max, l_min, l_max, n_term_min, n_term_max, shift, omega_min, omega_max, omega_step, eps, jc_init, nu_init):
     def poly_corrections(X, a, b, *c):
         j,l = X
         poly = 0
@@ -81,11 +81,11 @@ def xi_analysis_corrections(j_min, j_max, l_min, n_term_min, n_term_max, omega_m
         return poly
 
     # APRO I VARI FILE DA ANALIZZARE E CREO UN UNICO BLOCCO
-    # L, J, K, ene_sp, err_ene_sp, ene_g, err_ene_g, ene_dens, err_ene_dens, susc, err_susc, G_pm, err_G_pm, C, err_C, U, err_U, corr_len, err_corr_len, K2_g, err_K2_g, K2_sp, err_K2_sp, K3_g, err_K3_g, K3_sp, err_K3_sp = np.genfromtxt("./temp.dat", delimiter ="\t", unpack = True)
-    L, J, K, ene_sp, err_ene_sp, ene_g, err_ene_g, ene_dens, err_ene_dens, susc, err_susc, G_pm, err_G_pm, C, err_C, U, err_U, corr_len, err_corr_len = np.genfromtxt("./temp.dat", delimiter ="\t", unpack = True)
+    L, J, K, ene_sp, err_ene_sp, ene_g, err_ene_g, ene_dens, err_ene_dens, susc, err_susc, G_pm, err_G_pm, C, err_C, U, err_U, corr_len, err_corr_len, K2_g, err_K2_g, K2_sp, err_K2_sp, K3_g, err_K3_g, K3_sp, err_K3_sp = np.genfromtxt("./temp.dat", delimiter ="\t", unpack = True)
+    # L, J, K, ene_sp, err_ene_sp, ene_g, err_ene_g, ene_dens, err_ene_dens, susc, err_susc, G_pm, err_G_pm, C, err_C, U, err_U, corr_len, err_corr_len = np.genfromtxt("./temp.dat", delimiter ="\t", unpack = True)
 
     # TAGLIO LE MISURE ENTRO L'INTERVALLO DESIDERATO
-    mask = ((J>=j_min) & (J<=j_max) & (L>=l_min))
+    mask = ((J>=j_min) & (J<=j_max) & (L>=l_min) & (L<=l_max))
     J = J[mask]
     L = L[mask]
     corr_len = corr_len[mask]
@@ -101,14 +101,15 @@ def xi_analysis_corrections(j_min, j_max, l_min, n_term_min, n_term_max, omega_m
     omg = np.array([])
     coeff = []
 
-    c = np.zeros(n_term_min+n_term_min, dtype = 'float')
+    c = np.zeros(n_term_min+n_term_min-shift, dtype = 'float')
     initParam = [jc_init, nu_init, *c]
     for omega in tqdm(np.arange(omega_min, omega_max, omega_step), desc = 'xi_fit_w_corrections'):
         for n_term1 in range(n_term_min, n_term_max):
-            for n_term2 in range(n_term_min, n_term_max):
+            for n_term2 in range(n_term_min-shift, n_term_max-shift):
+                # print(omega, n_term1, n_term2)
                 inf_bounds = -np.ones(n_term1 + n_term2)
                 sup_bounds = np.ones(n_term1 + n_term2)
-                popt, pcov = curve_fit(poly_corrections, (J,L), corr_len/L, p0 = initParam, sigma = err_corr_len/L, absolute_sigma = True, bounds = ((0.690, 0.700, *inf_bounds), (0.715, 0.730, *sup_bounds)))
+                popt, pcov = curve_fit(poly_corrections, (J,L), corr_len/L, p0 = initParam, sigma = err_corr_len/L, absolute_sigma = True, bounds = ((0.650, 0.650, *inf_bounds), (0.750, 0.750, *sup_bounds)))
 
                 initParam = popt
                 initParam = np.append(initParam, 0.0)
@@ -130,10 +131,10 @@ def xi_analysis_corrections(j_min, j_max, l_min, n_term_min, n_term_max, omega_m
                 omg = np.append(omg, omega)
                 coeff.append(popt[2:])
 
-            c = np.zeros(n_term1+n_term_min+1, dtype = 'float')
+            c = np.ones(n_term1+n_term_min-shift+1, dtype = 'float')/3.0
             initParam = [jc_init, nu_init, *c]
 
-        c = np.zeros(n_term_min+n_term_min, dtype = 'float')
+        c = np.ones(n_term_min+n_term_min-shift, dtype = 'float')/3.0
         initParam = [jc_init, nu_init, *c]
 
     # PARAMETRI OTTIMALI DA RESTITUIRE
@@ -141,6 +142,7 @@ def xi_analysis_corrections(j_min, j_max, l_min, n_term_min, n_term_max, omega_m
     # DELLE SISTEMATICHE, CIOÈ TENENDO IL CHI^2
     # ENTRO UN CERTO INTERVALLO GUARDO COME VARIANO
     # I PARAMETRI PER DIVERSI GRADI, OMEGA ..
+    print(red_chisq)
     delta = np.abs(1-red_chisq)
     mask = ((delta<=eps))
     red_chisq_masked = red_chisq[mask]
@@ -148,6 +150,7 @@ def xi_analysis_corrections(j_min, j_max, l_min, n_term_min, n_term_max, omega_m
     err_Jc_masked = err_Jc[mask]
     nu_masked = nu[mask]
     err_nu_masked = err_nu[mask]
+    omega_masked = omg[mask]
 
     mean_chisq_red = np.mean(red_chisq_masked)
 
@@ -157,6 +160,9 @@ def xi_analysis_corrections(j_min, j_max, l_min, n_term_min, n_term_max, omega_m
     mean_nu = np.mean(nu_masked)
     std_nu = (np.max(nu_masked)-np.min(nu_masked))/2.0
 
+    omega_opt = np.mean(omega_masked)
+    std_omega = (np.max(omega_masked)-np.min(omega_masked))/2.0
+
     # PARAMETRI PER PLOT, DA NON PRENDERE TROPPO SUL SERIO
     cc = np.array(coeff[np.argmin(delta)])
     plot_params = [Jc[np.argmin(delta)], nu[np.argmin(delta)], *cc]
@@ -164,4 +170,5 @@ def xi_analysis_corrections(j_min, j_max, l_min, n_term_min, n_term_max, omega_m
     n_term2_xi = int(term2[np.argmin(delta)])
     omega_plot = omg[np.argmin(delta)]
 
-    return plot_params, n_term1_xi, n_term2_xi, omega_plot, mean_Jc, std_Jc, mean_nu, std_nu, mean_chisq_red
+
+    return plot_params, n_term1_xi, n_term2_xi, omega_plot, omega_opt, std_omega, mean_Jc, std_Jc, mean_nu, std_nu, mean_chisq_red

@@ -66,8 +66,9 @@ for entry in filenames:
     path_filenames.append(os.path.join(basepath, entry))
 
 for fname in path_filenames:
+    print(fname)
     L, V, D, J, K = np.genfromtxt(fname, dtype = "double", delimiter = "\t", unpack = True, max_rows = 1)
-    ene_sp, ene_g, ene_dens, susc, G_pm, mu2 = np.genfromtxt(fname, dtype = "double", delimiter = "\t", unpack = True, skip_header = 2, max_rows = 6000000)
+    ene_sp, ene_g, ene_dens, susc, G_pm, mu2 = np.genfromtxt(fname, dtype = "double", delimiter = "\t", unpack = True, skip_header = 2, max_rows = 6000000, invalid_raise = False)
 
     # SCARTO LA TESTA DEL FILE SCARTO IL PRIMO DECIMO
     skip = len(ene_dens)//10
