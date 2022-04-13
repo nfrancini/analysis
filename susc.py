@@ -16,7 +16,6 @@ def susc_analysis(j_min, j_max, l_min, n_term_min, n_term_max, eta_init):
 
     # APRO I VARI FILE DA ANALIZZARE E CREO UN UNICO BLOCCO
     L, J, K, ene_sp, err_ene_sp, ene_g, err_ene_g, ene_dens, err_ene_dens, susc, err_susc, G_pm, err_G_pm, C, err_C, U, err_U, corr_len, err_corr_len, K2_g, err_K2_g, K2_sp, err_K2_sp, K3_g, err_K3_g, K3_sp, err_K3_sp = np.genfromtxt("./temp.dat", delimiter ="\t", unpack = True)
-    # L, J, K, ene_sp, err_ene_sp, ene_g, err_ene_g, ene_dens, err_ene_dens, susc, err_susc, G_pm, err_G_pm, C, err_C, U, err_U, corr_len, err_corr_len = np.genfromtxt("./temp.dat", delimiter ="\t", unpack = True)
 
     # PROVO IL FIT PER LA SUSCETTIVITÀ, USO ODR PER TENERE IN CONTO
     # DEGLI ERRORI SULLA LUNGHEZZA DI CORRELAZIONE CHE FA DA VARIABILE INDIPENDENTE
@@ -26,6 +25,12 @@ def susc_analysis(j_min, j_max, l_min, n_term_min, n_term_max, eta_init):
     susc = susc[mask]
     err_susc = err_susc[mask]
     err_corr_len = err_corr_len[mask]
+
+    sorted_L = L[J.argsort()]
+    sorted_corr_len = corr_len[J.argsort()]
+    sorted_err_corr_len = err_corr_len[J.argsort()]
+    sorted_susc = susc[J.argsort()]
+    sorted_err_susc = err_susc[J.argsort()]
 
     # DEFINISCO ARRAY DI SUPPORTO PER I RISULTATI E PER
     # FISSARE I VARI ERRORI
@@ -38,25 +43,25 @@ def susc_analysis(j_min, j_max, l_min, n_term_min, n_term_max, eta_init):
     term = np.array([])
     coeff = []
 
-    a = np.full_like(corr_len, 1, dtype = 'int')
-    b = np.full_like(L, 0, dtype = 'int')
+    a = np.full_like(sorted_corr_len, 1, dtype = 'int')
+    b = np.full_like(sorted_L, 0, dtype = 'int')
 
     # CICLO SUL NUMERO DI TERMINI DEL POLINIMIO
     for n_term in tqdm(range(n_term_min, n_term_max), desc = 'susc_fit_no_corrections'):
         c = np.ones(n_term)
         init_odr = [eta_init, *c]
-        x = np.row_stack( (corr_len/L, L) )
-        sigma_x = np.row_stack( (err_corr_len/L, L*realEps)) # ERRORI FITTIZI SULLA L
+        x = np.row_stack( (sorted_corr_len/sorted_L, sorted_L) )
+        sigma_x = np.row_stack( (sorted_err_corr_len/sorted_L, sorted_L*realEps)) # ERRORI FITTIZI SULLA L
 
         fixed = np.row_stack((a , b) )          # USO QUESTO PER FISSARE GLI ERRORI DI L A ZERO
 
         model = odrpack.Model(poly_odr)
-        data = odrpack.RealData(x, susc, sx = sigma_x, sy = err_susc, fix = fixed)
+        data = odrpack.RealData(x, sorted_susc, sx = sigma_x, sy = sorted_err_susc, fix = fixed)
         odr = odrpack.ODR(data, model, beta0 = init_odr, ifixx = fixed)
         # odr.set_iprint(init = 2, final = 2)
         out = odr.run()
 
-        ndof = len(susc) - len(init_odr)
+        ndof = len(sorted_susc) - len(init_odr)
         red_chisq = np.append(red_chisq, (out.sum_square)/ndof)
         eta = np.append(eta, out.beta[0])
         err_eta = np.append(err_eta, np.sqrt(out.cov_beta.diagonal())[0])
@@ -85,7 +90,6 @@ def susc_analysis_corrections(j_min, j_max, l_min, n_term_min, n_term_max, shift
 
     # APRO I VARI FILE DA ANALIZZARE E CREO UN UNICO BLOCCO
     L, J, K, ene_sp, err_ene_sp, ene_g, err_ene_g, ene_dens, err_ene_dens, susc, err_susc, G_pm, err_G_pm, C, err_C, U, err_U, corr_len, err_corr_len, K2_g, err_K2_g, K2_sp, err_K2_sp, K3_g, err_K3_g, K3_sp, err_K3_sp = np.genfromtxt("./temp.dat", delimiter ="\t", unpack = True)
-    # L, J, K, ene_sp, err_ene_sp, ene_g, err_ene_g, ene_dens, err_ene_dens, susc, err_susc, G_pm, err_G_pm, C, err_C, U, err_U, corr_len, err_corr_len = np.genfromtxt("./temp.dat", delimiter ="\t", unpack = True)
 
     # PROVO IL FIT PER LA SUSCETTIVITÀ, USO ODR PER TENERE IN CONTO
     # DEGLI ERRORI SULLA LUNGHEZZA DI CORRELAZIONE CHE FA DA VARIABILE INDIPENDENTE
@@ -95,6 +99,12 @@ def susc_analysis_corrections(j_min, j_max, l_min, n_term_min, n_term_max, shift
     susc = susc[mask]
     err_susc = err_susc[mask]
     err_corr_len = err_corr_len[mask]
+
+    sorted_L = L[J.argsort()]
+    sorted_corr_len = corr_len[J.argsort()]
+    sorted_err_corr_len = err_corr_len[J.argsort()]
+    sorted_susc = susc[J.argsort()]
+    sorted_err_susc = err_susc[J.argsort()]
 
     machineEps = np.finfo('float').eps
     realEps = np.sqrt(machineEps)
@@ -107,8 +117,8 @@ def susc_analysis_corrections(j_min, j_max, l_min, n_term_min, n_term_max, shift
     omg = np.array([])
     coeff = []
 
-    a = np.full_like(corr_len, 1, dtype = 'int')
-    b = np.full_like(L, 0, dtype = 'int')
+    a = np.full_like(sorted_corr_len, 1, dtype = 'int')
+    b = np.full_like(sorted_L, 0, dtype = 'int')
 
     for omega in tqdm(np.arange(omega_min, omega_max, omega_step), desc = 'susc_fit_w_corrections'):
         for n_term1 in range(n_term_min, n_term_max):
@@ -117,12 +127,12 @@ def susc_analysis_corrections(j_min, j_max, l_min, n_term_min, n_term_max, shift
                 init_odr = [eta_init, *c]
                 fixed = np.row_stack((a , b) )          # USO QUESTO PER FISSARE GLI ERRORI DI L A ZERO
                 model = odrpack.Model(poly_odr_corrections)
-                x = np.row_stack((corr_len/L, L))
-                sigma_x = np.row_stack((err_corr_len/L, L*realEps))
-                data = odrpack.RealData(x, susc, sx = sigma_x, sy = err_susc, fix = fixed)
+                x = np.row_stack((sorted_corr_len/sorted_L, sorted_L))
+                sigma_x = np.row_stack((sorted_err_corr_len/sorted_L, sorted_L*realEps))
+                data = odrpack.RealData(x, sorted_susc, sx = sigma_x, sy = sorted_err_susc, fix = fixed)
                 odr = odrpack.ODR(data, model, beta0 = init_odr, ifixx = fixed)
                 out = odr.run()
-                ndof = len(susc) - len(init_odr)
+                ndof = len(sorted_susc) - len(init_odr)
                 red_chisq = np.append(red_chisq, (out.sum_square)/ndof)
                 eta = np.append(eta, out.beta[0])
                 err_eta = np.append(err_eta, np.sqrt(out.cov_beta.diagonal())[0])

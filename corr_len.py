@@ -17,14 +17,18 @@ def xi_analysis(j_min, j_max, l_min, n_term_min, n_term_max, jc_init, nu_init):
 
     # APRO I VARI FILE DA ANALIZZARE E CREO UN UNICO BLOCCO
     L, J, K, ene_sp, err_ene_sp, ene_g, err_ene_g, ene_dens, err_ene_dens, susc, err_susc, G_pm, err_G_pm, C, err_C, U, err_U, corr_len, err_corr_len, K2_g, err_K2_g, K2_sp, err_K2_sp, K3_g, err_K3_g, K3_sp, err_K3_sp = np.genfromtxt("./temp.dat", delimiter ="\t", unpack = True)
-    # L, J, K, ene_sp, err_ene_sp, ene_g, err_ene_g, ene_dens, err_ene_dens, susc, err_susc, G_pm, err_G_pm, C, err_C, U, err_U, corr_len, err_corr_len = np.genfromtxt("./temp.dat", delimiter ="\t", unpack = True)
 
-    # TAGLIO LE MISURE ENTRO L'INTERVALLO DESIDERATO
+    # TAGLIO LE MISURE ENTRO L'INTERVALLO DESIDERATO E RIORDINO
     mask = ((J>=j_min) & (J<=j_max) & (L>=l_min))
     J = J[mask]
     L = L[mask]
     corr_len = corr_len[mask]
     err_corr_len = err_corr_len[mask]
+
+    sorted_J = J[J.argsort()]
+    sorted_L = L[J.argsort()]
+    sorted_corr_len = corr_len[J.argsort()]
+    sorted_err_corr_len = err_corr_len[J.argsort()]
 
     # CREO ARRAY DI SUPPORTO PER SALVARE I VARI RISULTATI
     Jc = np.array([])
@@ -35,20 +39,20 @@ def xi_analysis(j_min, j_max, l_min, n_term_min, n_term_max, jc_init, nu_init):
     term = np.array([])
     coeff = []
 
-    c = np.ones(n_term_min)/2.0
+    c = np.zeros(n_term_min)
     initParam = [jc_init, nu_init, *c]
 
     # CICLO SUL NUMERO DI TERMINI DEL POLINOMIO
     for n_term in tqdm(range(n_term_min, n_term_max), desc = 'xi_fit_no_corrections'):
-        inf_bounds = -np.ones(n_term)
-        sup_bounds = np.ones(n_term)
-        popt, pcov = curve_fit(poly, (J,L), corr_len/L, p0 = initParam, sigma =err_corr_len/L, absolute_sigma = True, bounds = ((0.650, 0.650, *inf_bounds), (0.750, 0.750, *sup_bounds)))
+        inf_bounds = -np.ones(n_term)*100
+        sup_bounds = np.ones(n_term)*100
+        popt, pcov = curve_fit(poly, (sorted_J,sorted_L), sorted_corr_len/sorted_L, p0 = initParam, sigma =sorted_err_corr_len/sorted_L, absolute_sigma = True, bounds = ((0.700, 0.700, *inf_bounds), (0.720, 0.720, *sup_bounds)))
 
         initParam = popt
         initParam = np.append(initParam, 0.5)
 
-        chiq = np.sum(((corr_len/L - poly((J,L), *popt)) / (err_corr_len/L))**2)
-        ndof = len(corr_len) - len(initParam)
+        chiq = np.sum(((sorted_corr_len/sorted_L - poly((sorted_J,sorted_L), *popt)) / (sorted_err_corr_len/sorted_L))**2)
+        ndof = len(sorted_corr_len) - len(initParam)
         red_chiq = chiq/ndof
         perr = np.sqrt(np.diag(pcov))
         Jc = np.append(Jc, popt[0])
@@ -82,7 +86,6 @@ def xi_analysis_corrections(j_min, j_max, l_min, l_max, n_term_min, n_term_max, 
 
     # APRO I VARI FILE DA ANALIZZARE E CREO UN UNICO BLOCCO
     L, J, K, ene_sp, err_ene_sp, ene_g, err_ene_g, ene_dens, err_ene_dens, susc, err_susc, G_pm, err_G_pm, C, err_C, U, err_U, corr_len, err_corr_len, K2_g, err_K2_g, K2_sp, err_K2_sp, K3_g, err_K3_g, K3_sp, err_K3_sp = np.genfromtxt("./temp.dat", delimiter ="\t", unpack = True)
-    # L, J, K, ene_sp, err_ene_sp, ene_g, err_ene_g, ene_dens, err_ene_dens, susc, err_susc, G_pm, err_G_pm, C, err_C, U, err_U, corr_len, err_corr_len = np.genfromtxt("./temp.dat", delimiter ="\t", unpack = True)
 
     # TAGLIO LE MISURE ENTRO L'INTERVALLO DESIDERATO
     mask = ((J>=j_min) & (J<=j_max) & (L>=l_min) & (L<=l_max))
@@ -90,6 +93,11 @@ def xi_analysis_corrections(j_min, j_max, l_min, l_max, n_term_min, n_term_max, 
     L = L[mask]
     corr_len = corr_len[mask]
     err_corr_len = err_corr_len[mask]
+
+    sorted_J = J[J.argsort()]
+    sorted_L = L[J.argsort()]
+    sorted_corr_len = corr_len[J.argsort()]
+    sorted_err_corr_len = err_corr_len[J.argsort()]
 
     Jc = np.array([])
     err_Jc = np.array([])
@@ -107,15 +115,15 @@ def xi_analysis_corrections(j_min, j_max, l_min, l_max, n_term_min, n_term_max, 
         for n_term1 in range(n_term_min, n_term_max):
             for n_term2 in range(n_term_min-shift, n_term_max-shift):
                 # print(omega, n_term1, n_term2)
-                inf_bounds = -np.ones(n_term1 + n_term2)
-                sup_bounds = np.ones(n_term1 + n_term2)
-                popt, pcov = curve_fit(poly_corrections, (J,L), corr_len/L, p0 = initParam, sigma = err_corr_len/L, absolute_sigma = True, bounds = ((0.650, 0.650, *inf_bounds), (0.750, 0.750, *sup_bounds)))
+                inf_bounds = -np.ones(n_term1 + n_term2)*100
+                sup_bounds = np.ones(n_term1 + n_term2)*100
+                popt, pcov = curve_fit(poly_corrections, (sorted_J,sorted_L), sorted_corr_len/sorted_L, p0 = initParam, sigma = sorted_err_corr_len/L, absolute_sigma = True, bounds = ((0.700, 0.710, *inf_bounds), (0.720, 0.720, *sup_bounds)))
 
                 initParam = popt
                 initParam = np.append(initParam, 0.0)
 
-                chiq = np.sum(((corr_len/L - poly_corrections((J,L), *popt)) / (err_corr_len/L))**2)
-                ndof = len(corr_len) - len(initParam)
+                chiq = np.sum(((sorted_corr_len/sorted_L - poly_corrections((sorted_J,sorted_L), *popt)) / (sorted_err_corr_len/sorted_L))**2)
+                ndof = len(sorted_corr_len) - len(initParam)
                 red_chiq = chiq/ndof
 
                 Jc = np.append(Jc, popt[0])

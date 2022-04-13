@@ -43,10 +43,10 @@ l_min = 7
 n_term_min = 8
 n_term_max = 15
 
-kc_init = 0.076
-y_init = 1.488
+kc_init = 0.077
+y_init = 1.0/0.67
 
-ctrl_data = False
+ctrl_data = True
 ctrl_K2_g = False
 ctrl_K3_g = False
 ctrl_FO = False
@@ -67,44 +67,60 @@ with open("./temp.dat", "w") as tempfile:
                 tempfile.write(line)
 
 # APRO I VARI FILE DA ANALIZZARE E CREO UN UNICO BLOCCO
-# L, J, K, ene_sp, err_ene_sp, ene_g, err_ene_g, ene_dens, err_ene_dens, susc, err_susc, G_pm, err_G_pm, C, err_C, U, err_U, corr_len, err_corr_len, K2_g, err_K2_g, K2_sp, err_K2_sp, K3_g, err_K3_g, K3_sp, err_K3_sp = np.genfromtxt("./temp.dat", delimiter ="\t", unpack = True)
+L, J, K, ene_sp, err_ene_sp, ene_g, err_ene_g, ene_dens, err_ene_dens, susc, err_susc, G_pm, err_G_pm, C, err_C, U, err_U, corr_len, err_corr_len, K2_g, err_K2_g, K2_sp, err_K2_sp, K3_g, err_K3_g, K3_sp, err_K3_sp = np.genfromtxt("./temp.dat", delimiter ="\t", unpack = True)
 
-L, J, K, ene_sp, err_ene_sp, ene_g, err_ene_g, ene_dens, err_ene_dens, susc, err_susc, G_pm, err_G_pm, C, err_C, U, err_U, corr_len, err_corr_len = np.genfromtxt("./temp.dat", delimiter ="\t", unpack = True)
+# L, J, K, ene_sp, err_ene_sp, ene_g, err_ene_g, ene_dens, err_ene_dens, susc, err_susc, G_pm, err_G_pm, C, err_C, U, err_U, corr_len, err_corr_len = np.genfromtxt("./temp.dat", delimiter ="\t", unpack = True)
 
 # PLOT DI CONTROLLO INIZIALE
 if (ctrl_data == True):
     for fname in path_filenames:
         with open(fname) as infile:
-            # aux_L, aux_J, aux_K, aux_ene_sp, aux_err_ene_sp, aux_ene_g, aux_err_ene_g, aux_ene_dens, aux_err_ene_dens, aux_susc, aux_err_susc, aux_G_pm, aux_err_G_pm, aux_C, aux_err_C, aux_U, aux_err_U, aux_corr_len, aux_err_corr_len, aux_K2_g, aux_err_K2_g, aux_K2_sp, aux_err_K2_sp, aux_K3_g, aux_err_K3_g, aux_K3_sp, aux_err_K3_sp = np.genfromtxt(infile, delimiter ="\t", unpack = True)
-            aux_L, aux_J, aux_K, aux_ene_sp, aux_err_ene_sp, aux_ene_g, aux_err_ene_g, aux_ene_dens, aux_err_ene_dens, aux_susc, aux_err_susc, aux_G_pm, aux_err_G_pm, aux_C, aux_err_C, aux_U, aux_err_U, aux_corr_len, aux_err_corr_len = np.genfromtxt(infile, delimiter ="\t", unpack = True)
+            aux_L, aux_J, aux_K, aux_ene_sp, aux_err_ene_sp, aux_ene_g, aux_err_ene_g, aux_ene_dens, aux_err_ene_dens, aux_susc, aux_err_susc, aux_G_pm, aux_err_G_pm, aux_C, aux_err_C, aux_U, aux_err_U, aux_corr_len, aux_err_corr_len, aux_K2_g, aux_err_K2_g, aux_K2_sp, aux_err_K2_sp, aux_K3_g, aux_err_K3_g, aux_K3_sp, aux_err_K3_sp = np.genfromtxt(infile, delimiter ="\t", unpack = True)
+            # aux_L, aux_J, aux_K, aux_ene_sp, aux_err_ene_sp, aux_ene_g, aux_err_ene_g, aux_ene_dens, aux_err_ene_dens, aux_susc, aux_err_susc, aux_G_pm, aux_err_G_pm, aux_C, aux_err_C, aux_U, aux_err_U, aux_corr_len, aux_err_corr_len = np.genfromtxt(infile, delimiter ="\t", unpack = True)
 
-            # CUMULANTE K2
-            fig_1 = pl.figure(1)
-            pl.errorbar(aux_K, aux_K2_g, aux_err_K2_g, ls='', marker = 'o', fillstyle = 'none', label = 'L=' + str(int(aux_L[0])))
-            pl.xlabel(r'$\kappa$')
-            pl.ylabel(r'$K_{2g}$')
-            pl.legend()
+            # CUMULANTI K2
+            # fig_1 = pl.figure(1)
+            # pl.errorbar(aux_K[aux_K.argsort()], aux_K2_g[aux_K.argsort()], aux_err_K2_g[aux_K.argsort()], ls='-', marker = 'o', fillstyle = 'none', label = 'L=' + str(int(aux_L[0])) + ' gauge')
+            # pl.errorbar(aux_K[aux_K.argsort()], aux_K2_sp[aux_K.argsort()], aux_err_K2_sp[aux_K.argsort()], ls='-', marker = 'o', fillstyle = 'none', label = 'L=' + str(int(aux_L[0])) + ' spin')
+            # pl.xlabel(r'$\kappa$')
+            # pl.ylabel(r'$K_{2}$')
+            # pl.legend()
 
-            # CUMULANTE K2 RISCALATO
+            # CALORE SPECIFICO
+            # fig_2 = pl.figure(2)
+            # pl.errorbar(aux_K[aux_K.argsort()], aux_C[aux_K.argsort()], aux_err_C[aux_K.argsort()], ls='-', marker = 'o', fillstyle = 'none', label = 'L=' + str(int(aux_L[0])))
+            # pl.xlabel(r'$\kappa$')
+            # pl.ylabel(r'$C$')
+            # pl.legend()
+
+            # # CUMULANTE K2 RISCALATO
             fig_2 = pl.figure(2)
-            pl.errorbar((aux_K - kc_init)*(aux_L)**(y_init), aux_K2_g/(aux_L**(2*y_init)), aux_err_K2_g/(aux_L**(2*y_init)) ls='', marker = 'o', fillstyle = 'none', label = 'L=' + str(int(aux_L[0])))
+            pl.errorbar((aux_K - kc_init)*(aux_L)**(y_init), aux_K2_g/(aux_L**(2*y_init)), aux_err_K2_g/(aux_L**(2*y_init)), ls='', marker = 'o', fillstyle = 'none', label = 'L=' + str(int(aux_L[0])))
             pl.xlabel(r'$(\kappa - \kappa_c)L^{y}$')
             pl.ylabel(r'$K_{2g}/L^{2y}$')
             pl.legend()
-
+            #
             # CUMULANTE K3
-            fig_3 = pl.figure(3)
-            pl.errorbar(aux_K, aux_K3_g, aux_err_K3_g, ls='', marker = 'o', fillstyle = 'none', label = 'L=' + str(int(aux_L[0])))
-            pl.xlabel(r'$\kappa$')
-            pl.ylabel(r'$K_{3g}$')
-            pl.legend()
+            # fig_3 = pl.figure(3)
+            # pl.errorbar(aux_K[aux_K.argsort()], aux_K3_g[aux_K.argsort()], aux_err_K3_g[aux_K.argsort()], ls='-', marker = 'o', fillstyle = 'none', label = 'L=' + str(int(aux_L[0])) + ' gauge')
+            # pl.errorbar(aux_K[aux_K.argsort()], aux_K3_sp[aux_K.argsort()], aux_err_K3_sp[aux_K.argsort()], ls='-', marker = 'o', fillstyle = 'none', label = 'L=' + str(int(aux_L[0])) + ' spin' )
+            # pl.xlabel(r'$\kappa$')
+            # pl.ylabel(r'$K_{3}$')
+            # pl.legend()
 
-            # CUMULANTE K3 RISCALATO
+            # # CUMULANTE K3 RISCALATO
             fig_4 = pl.figure(4)
-            pl.errorbar((aux_K - kc_init)*(aux_L)**(y_init), aux_K3_g/(aux_L**(3*y_init)), aux_err_K3_g/(aux_L**(3*y_init)) ls='', marker = 'o', fillstyle = 'none', label = 'L=' + str(int(aux_L[0])))
+            pl.errorbar((aux_K - kc_init)*(aux_L)**(y_init), aux_K3_g/(aux_L**(3*y_init)), aux_err_K3_g/(aux_L**(3*y_init)), ls='', marker = 'o', fillstyle = 'none', label = 'L=' + str(int(aux_L[0])))
             pl.xlabel(r'$(\kappa - \kappa_c)L^{y}$')
             pl.ylabel(r'$K_{3g}/L^{3y}$')
             pl.legend()
+
+            # DENSITÀ DI ENERGIA
+            # fig_5 = pl.figure(5)
+            # pl.errorbar(aux_K, aux_ene_dens, aux_err_ene_dens, ls='', marker = 'o', fillstyle = 'none', label = 'L=' + str(int(aux_L[0])))
+            # pl.xlabel(r'$\kappa$')
+            # pl.ylabel(r'$\epsilon$')
+            # pl.legend()
 
 # FIT SENZA E CON CORREZIONI PER TRANSIZIONE CONTINUA
 # IN QUESTO MODO POSSO CALCOLARE ALCUNI INDICI CRITICI ED IL PUNTO CRITICO
@@ -164,7 +180,7 @@ if (ctrl_K2_g == True):
 
             # CUMULANTE K2 RISCALATO
             fig_2 = pl.figure(2)
-            pl.errorbar((aux_K - mean_Kc_K2)*(aux_L)**(mean_yk_K2), aux_K2_g/(aux_L**(2*mean_yk_K2)), aux_err_K2_g/(aux_L**(2*mean_yk_K2)) ls='', fillstyle = 'none', color = c, marker = m, label = 'L=' + str(int(aux_L[0])))
+            pl.errorbar((aux_K - mean_Kc_K2)*(aux_L)**(mean_yk_K2), aux_K2_g/(aux_L**(2*mean_yk_K2)), aux_err_K2_g/(aux_L**(2*mean_yk_K2)), ls='', fillstyle = 'none', color = c, marker = m, label = 'L=' + str(int(aux_L[0])))
             pl.xlabel(r'$(\kappa - \kappa_c)L^{y}$')
             pl.ylabel(r'$K_{2g}/L^{2y}$')
             pl.legend()
@@ -225,7 +241,7 @@ if (ctrl_K3_g == True):
 
             # CUMULANTE K3 RISCALATO
             fig_2 = pl.figure(2)
-            pl.errorbar((aux_K - mean_Kc_K3)*(aux_L)**(mean_yk_K3), aux_K3_g/(aux_L**(3*mean_yk_K3)), aux_err_K3_g/(aux_L**(3*mean_yk_K3)) ls='', fillstyle = 'none', color = c, marker = m, label = 'L=' + str(int(aux_L[0])))
+            pl.errorbar((aux_K - mean_Kc_K3)*(aux_L)**(mean_yk_K3), aux_K3_g/(aux_L**(3*mean_yk_K3)), aux_err_K3_g/(aux_L**(3*mean_yk_K3)), ls='', fillstyle = 'none', color = c, marker = m, label = 'L=' + str(int(aux_L[0])))
             pl.xlabel(r'$(\kappa - \kappa_c)L^{y}$')
             pl.ylabel(r'$K_{3g}/L^{3y}$')
             pl.legend()

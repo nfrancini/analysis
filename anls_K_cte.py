@@ -31,25 +31,28 @@ def poly_corrections(X, a, b, *c):
         poly = poly + (c[i + n_term1] * ((j-a)*l**(1/b))**i)*(l**(-omega))
     return poly
 
+def f(x):
+    return 5.0/3 + x*(3.0263535+23.139470*x)*(1-np.exp(-15*x))-47.838890*x**2+58.489668*x**3-67.020681*x**4+38.408855*x**5-8.8557348*x**6
+
 # DEFINISCO I PARAMETRI PER L'ANALISI DATI E I VALORI INIZIALI CHE MI ASPETTO
-j_min = 0.640
-j_max = 0.750
+j_min = 0.62
+j_max = 0.75
 
 l_min = 7
 l_max = 35
 
 n_term_min = 10
 n_term_max = 15
-shift = 0
+shift = 5
 
 jc_init = 0.71
 nu_init = 0.7117
 eta_init = 0.0378
 
-ctrl_data = False
-ctrl_continuos = True
+ctrl_data = True
+ctrl_continuos = False
 ctrl_FO = False
-ctrl_savefig = True
+ctrl_savefig = False
 
 # CREO FILE UNICO TEMPORANEO PER I DATI
 # MEMORIZZO TUTTI I NOMI DEI FILE IN CARTELLA
@@ -69,44 +72,83 @@ with open("./temp.dat", "w") as tempfile:
 # APRO I VARI FILE DA ANALIZZARE E CREO UN UNICO BLOCCO
 L, J, K, ene_sp, err_ene_sp, ene_g, err_ene_g, ene_dens, err_ene_dens, susc, err_susc, G_pm, err_G_pm, C, err_C, U, err_U, corr_len, err_corr_len, K2_g, err_K2_g, K2_sp, err_K2_sp, K3_g, err_K3_g, K3_sp, err_K3_sp = np.genfromtxt("./temp.dat", delimiter ="\t", unpack = True)
 
-# L, J, K, ene_sp, err_ene_sp, ene_g, err_ene_g, ene_dens, err_ene_dens, susc, err_susc, G_pm, err_G_pm, C, err_C, U, err_U, corr_len, err_corr_len = np.genfromtxt("./temp.dat", delimiter ="\t", unpack = True)
-
 # PLOT DI CONTROLLO INIZIALE
 if (ctrl_data == True):
     for fname in path_filenames:
         with open(fname) as infile:
             aux_L, aux_J, aux_K, aux_ene_sp, aux_err_ene_sp, aux_ene_g, aux_err_ene_g, aux_ene_dens, aux_err_ene_dens, aux_susc, aux_err_susc, aux_G_pm, aux_err_G_pm, aux_C, aux_err_C, aux_U, aux_err_U, aux_corr_len, aux_err_corr_len, aux_K2_g, aux_err_K2_g, aux_K2_sp, aux_err_K2_sp, aux_K3_g, aux_err_K3_g, aux_K3_sp, aux_err_K3_sp = np.genfromtxt(infile, delimiter ="\t", unpack = True)
-            # aux_L, aux_J, aux_K, aux_ene_sp, aux_err_ene_sp, aux_ene_g, aux_err_ene_g, aux_ene_dens, aux_err_ene_dens, aux_susc, aux_err_susc, aux_G_pm, aux_err_G_pm, aux_C, aux_err_C, aux_U, aux_err_U, aux_corr_len, aux_err_corr_len = np.genfromtxt(infile, delimiter ="\t", unpack = True)
+
+            # RIORDINO GLI ARRAY
+            sorted_J = aux_J[aux_J.argsort()]
+            sorted_L = aux_L[aux_J.argsort()]
+            sorted_corr_len = aux_corr_len[aux_J.argsort()]
+            sorted_err_corr_len = aux_err_corr_len[aux_J.argsort()]
+            sorted_susc = aux_susc[aux_J.argsort()]
+            sorted_err_susc = aux_err_susc[aux_J.argsort()]
+            sorted_U = aux_U[aux_J.argsort()]
+            sorted_err_U = aux_err_U[aux_J.argsort()]
+            sorted_C = aux_C[aux_J.argsort()]
+            sorted_err_C = aux_err_C[aux_J.argsort()]
 
             # LUNGHEZZA DI CORRELAZIONE (PER ADESSO SOLO CON CORREZIONI)
             fig_1 = pl.figure(1)
-            pl.errorbar(aux_J, aux_corr_len/aux_L, aux_err_corr_len/aux_L, ls='', marker = 'o', fillstyle = 'none', label = 'L=' + str(int(aux_L[0])))
+            pl.errorbar(sorted_J, sorted_corr_len/sorted_L, sorted_err_corr_len/sorted_L, ls='', marker = 'o', fillstyle = 'none', label = 'L=' + str(int(sorted_L[0])))
             pl.xlabel(r'$J$')
             pl.ylabel(r'$R_{\xi}$')
             pl.legend()
 
             # SUSCETTIVITÀ
             fig_2 = pl.figure(2)
-            pl.errorbar(aux_corr_len/aux_L, aux_susc*aux_L**(eta_init-2), aux_err_susc*aux_L**(eta_init-2), aux_err_corr_len/aux_L, ls='', marker = 'o', fillstyle = 'none', label = 'L=' + str(int(aux_L[0])))
+            pl.errorbar(sorted_corr_len/sorted_L, sorted_susc*sorted_L**(eta_init-2), sorted_err_susc*sorted_L**(eta_init-2), sorted_err_corr_len/sorted_L, ls='', marker = 'o', fillstyle = 'none', label = 'L=' + str(int(sorted_L[0])))
             pl.xlabel(r'$R_{\xi}$')
             pl.ylabel(r'$\chi L^{\eta - 2}$')
             pl.legend()
 
             # BINDER
             fig_4 = pl.figure(4)
-            pl.errorbar(aux_corr_len/aux_L, aux_U, aux_err_U, aux_err_corr_len/aux_L, ls='', marker = 'o', fillstyle = 'none', label = 'L=' + str(int(aux_L[0])))
+            pl.errorbar(sorted_corr_len/sorted_L, sorted_U, sorted_err_U, sorted_err_corr_len/sorted_L, ls='', marker = 'o', fillstyle = 'none', label = 'L=' + str(int(sorted_L[0])))
             pl.xlabel(r'$R_{\xi}$')
             pl.ylabel(r'$U$')
             pl.legend()
 
             fig_5 = pl.figure(5)
-            sorted_J = aux_J[aux_J.argsort()]
-            sorted_U = aux_U[aux_J.argsort()]
-            sorted_err_U = aux_err_U[aux_J.argsort()]
-            pl.errorbar(sorted_J, sorted_U, sorted_err_U, ls='-', marker = 'o', fillstyle = 'none', label = 'L=' + str(int(aux_L[0])))
+            pl.errorbar(sorted_J, sorted_U, sorted_err_U, ls='-', marker = 'o', fillstyle = 'none', label = 'L=' + str(int(sorted_L[0])))
             pl.xlabel(r'$J$')
             pl.ylabel(r'$U$')
             pl.legend()
+
+            # CALORE SPECIFICO E CUMULANTI
+            fig_6 = pl.figure(6)
+            pl.errorbar(sorted_J, sorted_C, sorted_err_C, ls = '', marker = 'o', fillstyle = 'none', label = 'L=' + str(int(sorted_L[0])))
+            pl.xlabel(r'$J$')
+            pl.ylabel(r'$C$')
+            pl.legend()
+
+            # fig_7 = pl.figure(7)
+            # pl.errorbar(sorted_corr_len/sorted_L, sorted_K2_g*sorted_L**(-2/nu_init), sorted_err_K2_g*sorted_L**(-2/nu_init), ls = '', marker = 'o', fillstyle = 'none', label = 'L=' + str(int(sorted_L[0])))
+            # pl.xlabel(r'$R_{\xi}$')
+            # pl.ylabel(r'$K_{2,g}$')
+            # pl.legend()
+            #
+            # fig_8 = pl.figure(8)
+            # pl.errorbar(sorted_corr_len/sorted_L, sorted_K2_sp*sorted_L**(-2/nu_init), sorted_err_K2_sp*sorted_L**(-2/nu_init), ls = '', marker = 'o', fillstyle = 'none', label = 'L=' + str(int(sorted_L[0])))
+            # pl.xlabel(r'$R_{\xi}$')
+            # pl.ylabel(r'$K_{2,sp}$')
+            # pl.legend()
+            #
+            # fig_9 = pl.figure(9)
+            # # pl.errorbar(sorted_corr_len/sorted_L, sorted_K3_g*sorted_L**(-3/nu_init), sorted_err_K3_g*sorted_L**(-3/nu_init), ls = '', marker = 'o', fillstyle = 'none', label = 'L=' + str(int(sorted_L[0])))
+            # pl.errorbar((sorted_J - jc_init)*sorted_L**(1.0/nu_init), sorted_K3_g*sorted_L**(-3/nu_init), sorted_err_K3_g*sorted_L**(-3/nu_init), ls = '', marker = 'o', fillstyle = 'none', label = 'L=' + str(int(sorted_L[0])))
+            # pl.xlabel(r'$(J-J_c)L^{1/\nu}$')
+            # pl.ylabel(r'$K_{3,g}$')
+            # pl.legend()
+            #
+            # fig_10 = pl.figure(10)
+            # # pl.errorbar(sorted_corr_len/sorted_L, sorted_K3_sp*sorted_L**(-3/nu_init), sorted_err_K3_sp*sorted_L**(-3/nu_init), ls = '', marker = 'o', fillstyle = 'none', label = 'L=' + str(int(sorted_L[0])))
+            # pl.errorbar((sorted_J - jc_init)*sorted_L**(1.0/nu_init), sorted_K3_sp*sorted_L**(-3/nu_init), sorted_err_K3_sp*sorted_L**(-3/nu_init), ls = '', marker = 'o', fillstyle = 'none', label = 'L=' + str(int(sorted_L[0])))
+            # pl.xlabel(r'$(J-J_c)L^{1/\nu}$')
+            # pl.ylabel(r'$K_{3,sp}$')
+            # pl.legend()
 
 # FIT SENZA E CON CORREZIONI PER TRANSIZIONE CONTINUA
 # IN QUESTO MODO POSSO CALCOLARE ALCUNI INDICI CRITICI ED IL PUNTO CRITICO
@@ -114,14 +156,14 @@ if (ctrl_continuos == True):
     popt, err_opt, n_term_xi, red_chisq_opt_xi = xi_analysis(j_min, j_max, l_min, n_term_min, n_term_max, jc_init, nu_init)
     popt1, err_opt1, n_term_susc, red_chisq_opt_susc = susc_analysis(j_min, j_max, l_min, n_term_min, n_term_max, eta_init)
 
-    omega_min = 0.9
-    omega_max = 1.2
-    omega_step = 0.1
+    omega_min = 0.7
+    omega_max = 0.8
+    omega_step = 0.001
 
-    eps = 0.8
+    eps = 8
 
-    plot_params_xi, n_term1_xi, n_term2_xi, omega_plot_xi, omega_opt_xi, std_omega_xi, mean_Jc, std_Jc, mean_nu, std_nu, mean_chisq_red_xi = xi_analysis_corrections(j_min, j_max, l_min, l_max, n_term_min, n_term_max, shift, omega_min, omega_max, omega_step, eps, popt[0], popt[1])
-    plot_params_susc, n_term1_susc, n_term2_susc, omega_plot_susc, omega_opt_susc, std_omega_susc, mean_eta, std_eta, mean_chisq_red_susc = susc_analysis_corrections(j_min, j_max, l_min, n_term_min, n_term_max, shift, omega_min, omega_max, omega_step, eps, popt1[0])
+    plot_params_xi, n_term1_xi, n_term2_xi, omega_plot_xi, omega_opt_xi, std_omega_xi, mean_Jc, std_Jc, mean_nu, std_nu, mean_chisq_red_xi = xi_analysis_corrections(j_min, j_max, l_min, l_max, n_term_min, n_term_max, shift, omega_min, omega_max, omega_step, eps, jc_init, nu_init)
+    plot_params_susc, n_term1_susc, n_term2_susc, omega_plot_susc, omega_opt_susc, std_omega_susc, mean_eta, std_eta, mean_chisq_red_susc = susc_analysis_corrections(j_min, j_max, l_min, n_term_min, n_term_max, shift, omega_min, omega_max, omega_step, eps, eta_init)
 
     # STAMPO I RISULTATI
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -164,20 +206,31 @@ if (ctrl_continuos == True):
     for fname in path_filenames:
         with open(fname) as infile:
             aux_L, aux_J, aux_K, aux_ene_sp, aux_err_ene_sp, aux_ene_g, aux_err_ene_g, aux_ene_dens, aux_err_ene_dens, aux_susc, aux_err_susc, aux_G_pm, aux_err_G_pm, aux_C, aux_err_C, aux_U, aux_err_U, aux_corr_len, aux_err_corr_len, aux_K2_g, aux_err_K2_g, aux_K2_sp, aux_err_K2_sp, aux_K3_g, aux_err_K3_g, aux_K3_sp, aux_err_K3_sp = np.genfromtxt(infile, delimiter ="\t", unpack = True)
-            # aux_L, aux_J, aux_K, aux_ene_sp, aux_err_ene_sp, aux_ene_g, aux_err_ene_g, aux_ene_dens, aux_err_ene_dens, aux_susc, aux_err_susc, aux_G_pm, aux_err_G_pm, aux_C, aux_err_C, aux_U, aux_err_U, aux_corr_len, aux_err_corr_len = np.genfromtxt(infile, delimiter ="\t", unpack = True)
 
             c = next(c_cycle)
             m = next(m_cycle)
+
+            # RIORDINO GLI ARRAY
+            sorted_J = aux_J[aux_J.argsort()]
+            sorted_L = aux_L[aux_J.argsort()]
+            sorted_corr_len = aux_corr_len[aux_J.argsort()]
+            sorted_err_corr_len = aux_err_corr_len[aux_J.argsort()]
+            sorted_susc = aux_susc[aux_J.argsort()]
+            sorted_err_susc = aux_err_susc[aux_J.argsort()]
+            sorted_U = aux_U[aux_J.argsort()]
+            sorted_err_U = aux_err_U[aux_J.argsort()]
+            sorted_C = aux_C[aux_J.argsort()]
+            sorted_err_C = aux_err_C[aux_J.argsort()]
 
             # LUNGHEZZA DI CORRELAZIONE (PER ADESSO SOLO CON CORREZIONI)
             fig_1 = pl.figure(1)
             n_term1 = n_term1_xi
             n_term2 = n_term2_xi
             omega = omega_plot_xi
-            pl.errorbar(aux_J, aux_corr_len/aux_L, aux_err_corr_len/aux_L, ls='', fillstyle = 'none', color = c, marker = m, label = 'L=' + str(int(aux_L[0])))
+            pl.errorbar(sorted_J, sorted_corr_len/sorted_L, sorted_err_corr_len/sorted_L, ls='', fillstyle = 'none', color = c, marker = m, label = 'L=' + str(int(sorted_L[0])))
 
             # x = np.linspace(j_min, j_max, 500)
-            # y = np.array([aux_L[0]]*len(x))
+            # y = np.array([sorted_L[0]]*len(x))
             # pl.plot(x, poly_corrections((x,y), *plot_params_xi), color = c)
             # pl.plot(x, poly((x,y), *popt))
 
@@ -188,7 +241,7 @@ if (ctrl_continuos == True):
                 pl.savefig('./grafici/continuo/K_0.04/corr_len.png')
 
             fig_2 = pl.figure(2)
-            pl.errorbar((aux_J-mean_Jc)*(aux_L**(1.0/mean_nu)), aux_corr_len/aux_L, aux_err_corr_len/aux_L, ls='', fillstyle = 'none', color = c, marker = m, label = 'L=' + str(int(aux_L[0])))
+            pl.errorbar((sorted_J-mean_Jc)*(sorted_L**(1.0/mean_nu)), sorted_corr_len/sorted_L, sorted_err_corr_len/sorted_L, ls='', fillstyle = 'none', color = c, marker = m, label = 'L=' + str(int(sorted_L[0])))
 
             pl.xlabel(r'$(J-J_c)L^{1/\nu}$')
             pl.ylabel(r'$R_{\xi}$')
@@ -198,7 +251,7 @@ if (ctrl_continuos == True):
 
             # SUSCETTIVITÀ
             fig_3 = pl.figure(3)
-            pl.errorbar(aux_corr_len/aux_L, aux_susc*aux_L**(mean_eta-2), aux_err_susc*aux_L**(mean_eta-2), aux_err_corr_len/aux_L, ls='', color = c, marker = m, fillstyle = 'none', label = 'L=' + str(int(aux_L[0])))
+            pl.errorbar(sorted_corr_len/sorted_L, sorted_susc*sorted_L**(mean_eta-2), sorted_err_susc*sorted_L**(mean_eta-2), sorted_err_corr_len/sorted_L, ls='', color = c, marker = m, fillstyle = 'none', label = 'L=' + str(int(sorted_L[0])))
 
             pl.xlabel(r'$R_{\xi}$')
             pl.ylabel(r'$\chi L^{\eta - 2}$')
@@ -208,20 +261,31 @@ if (ctrl_continuos == True):
 
             # BINDER
             fig_4 = pl.figure(4)
-            pl.errorbar(aux_corr_len/aux_L, aux_U, aux_err_U, aux_err_corr_len/aux_L, ls='', color = c, marker = m, fillstyle = 'none', label = 'L=' + str(int(aux_L[0])))
+            pl.errorbar(sorted_corr_len/sorted_L, sorted_U, sorted_err_U, sorted_err_corr_len/sorted_L, ls='', color = c, marker = m, fillstyle = 'none', label = 'L=' + str(int(sorted_L[0])))
             pl.xlabel(r'$R_{\xi}$')
             pl.ylabel(r'$U$')
+            # x = np.linspace(min(sorted_corr_len/sorted_L), max(sorted_corr_len/sorted_L),500)
+            # pl.plot(x, f(x))
             pl.legend()
             if (ctrl_savefig == True):
                 pl.savefig('./grafici/continuo/K_0.04/binder_rescaled.png')
 
 if (ctrl_FO == True):
-    inter_min = 0.65
-    inter_max = 0.75
+    inter_min = 0.34
+    inter_max = 0.36
+
+    l_min = 30
+    l_max = 65
+
+    j_min = 0.352
+    j_max = 0.359
+
+    n_term_min = 4
+    n_term_max = 5
 
     ctrl_plot = True
 
-    mean_intersect, err_intersect, n_term_FO = FO_intersection(path_filenames, j_min, j_max, n_term_min, n_term_max, inter_min, inter_max, ctrl_plot)
+    mean_intersect, err_intersect, n_term_FO = FO_intersection(path_filenames, j_min, j_max, l_min, l_max, n_term_min, n_term_max, inter_min, inter_max, ctrl_plot)
 
     print("-----------------------------------------------------")
     print("INTERSEZIONE DELLE CURVE U(J) NELLA TRANSIZIONE DEL PRIMO ORDINE")
@@ -239,27 +303,39 @@ if (ctrl_FO == True):
 
     for fname in path_filenames:
         with open(fname) as infile:
-            # aux_L, aux_J, aux_K, aux_ene_sp, aux_err_ene_sp, aux_ene_g, aux_err_ene_g, aux_ene_dens, aux_err_ene_dens, aux_susc, aux_err_susc, aux_G_pm, aux_err_G_pm, aux_C, aux_err_C, aux_U, aux_err_U, aux_corr_len, aux_err_corr_len, aux_K2_g, aux_err_K2_g, aux_K2_sp, aux_err_K2_sp, aux_K3_g, aux_err_K3_g, aux_K3_sp, aux_err_K3_sp = np.genfromtxt(infile, delimiter ="\t", unpack = True)
-            aux_L, aux_J, aux_K, aux_ene_sp, aux_err_ene_sp, aux_ene_g, aux_err_ene_g, aux_ene_dens, aux_err_ene_dens, aux_susc, aux_err_susc, aux_G_pm, aux_err_G_pm, aux_C, aux_err_C, aux_U, aux_err_U, aux_corr_len, aux_err_corr_len = np.genfromtxt(infile, delimiter ="\t", unpack = True)
+            aux_L, aux_J, aux_K, aux_ene_sp, aux_err_ene_sp, aux_ene_g, aux_err_ene_g, aux_ene_dens, aux_err_ene_dens, aux_susc, aux_err_susc, aux_G_pm, aux_err_G_pm, aux_C, aux_err_C, aux_U, aux_err_U, aux_corr_len, aux_err_corr_len, aux_K2_g, aux_err_K2_g, aux_K2_sp, aux_err_K2_sp, aux_K3_g, aux_err_K3_g, aux_K3_sp, aux_err_K3_sp = np.genfromtxt(infile, delimiter ="\t", unpack = True)
 
             c = next(c_cycle)
             m = next(m_cycle)
 
+            # RIORDINO GLI ARRAY
+            sorted_J = aux_J[aux_J.argsort()]
+            sorted_L = aux_L[aux_J.argsort()]
+            sorted_corr_len = aux_corr_len[aux_J.argsort()]
+            sorted_err_corr_len = aux_err_corr_len[aux_J.argsort()]
+            sorted_susc = aux_susc[aux_J.argsort()]
+            sorted_err_susc = aux_err_susc[aux_J.argsort()]
+            sorted_U = aux_U[aux_J.argsort()]
+            sorted_err_U = aux_err_U[aux_J.argsort()]
+            sorted_C = aux_C[aux_J.argsort()]
+            sorted_err_C = aux_err_C[aux_J.argsort()]
+
             # BINDER
             fig_1 = pl.figure(1)
-            pl.errorbar(aux_corr_len/aux_L, aux_U, aux_err_U, aux_err_corr_len/aux_L, ls='', color = c, marker = m, fillstyle = 'none', label = 'L=' + str(int(aux_L[0])))
+            pl.errorbar(sorted_corr_len/sorted_L, sorted_U, sorted_err_U, sorted_err_corr_len/sorted_L, ls='', color = c, marker = m, fillstyle = 'none', label = 'L=' + str(int(sorted_L[0])))
             pl.xlabel(r'$R_{\xi}$')
             pl.ylabel(r'$U$')
             pl.legend()
+            pl.savefig('./grafici/continuo/K_0.4/U_vs_xi.png')
 
             fig_2 = pl.figure(2)
-            sorted_J = aux_J[aux_J.argsort()]
-            sorted_U = aux_U[aux_J.argsort()]
-            sorted_err_U = aux_err_U[aux_J.argsort()]
-            pl.errorbar(sorted_J, sorted_U, sorted_err_U, ls='-', color = c, marker = m, fillstyle = 'none', label = 'L=' + str(int(aux_L[0])))
+            pl.errorbar(sorted_J, sorted_U, sorted_err_U, ls='-', color = c, marker = m, fillstyle = 'none', label = 'L=' + str(int(sorted_L[0])))
+            # pl.axvline(x=mean_intersect-err_intersect, ls = '--', color = 'gray')
+            # pl.axvline(x=mean_intersect+err_intersect, ls = '--', color = 'gray')
             pl.xlabel(r'$J$')
             pl.ylabel(r'$U$')
             pl.legend()
+            pl.savefig('./grafici/continuo/K_0.4/U_vs_J.png')
 
 pl.show()
 
