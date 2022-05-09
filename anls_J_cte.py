@@ -13,6 +13,7 @@ from graph_style import *
 from corr_len import *
 from susc import *
 from FO_intersection import *
+from cumulants import *
 
 # DEFINISCO LE FUNZIONI PER I PLOT
 def poly(X, a, b, d, *c):
@@ -35,16 +36,18 @@ def poly_analytic_corrections(X, a, b, *c):
     return (poly)*l**(2*b) + poly2*l**3
 
 # DEFINISCO I PARAMETRI PER L'ANALISI DATI E I VALORI INIZIALI CHE MI ASPETTO
-k_min = 0.05
-k_max = 0.09
+k_min = 0.250
+k_max = 0.300
 
-l_min = 7
+l_min = 5
 
-n_term_min = 8
-n_term_max = 15
+n_term_min = 5
+n_term_max = 12
+shift = 3
 
-kc_init = 0.077
-y_init = 1.0/0.67
+# kc_init = 0.089
+kc_init = 0.677
+y_init = 1.50
 
 ctrl_data = True
 ctrl_K2_g = False
@@ -69,8 +72,6 @@ with open("./temp.dat", "w") as tempfile:
 # APRO I VARI FILE DA ANALIZZARE E CREO UN UNICO BLOCCO
 L, J, K, ene_sp, err_ene_sp, ene_g, err_ene_g, ene_dens, err_ene_dens, susc, err_susc, G_pm, err_G_pm, C, err_C, U, err_U, corr_len, err_corr_len, K2_g, err_K2_g, K2_sp, err_K2_sp, K3_g, err_K3_g, K3_sp, err_K3_sp = np.genfromtxt("./temp.dat", delimiter ="\t", unpack = True)
 
-# L, J, K, ene_sp, err_ene_sp, ene_g, err_ene_g, ene_dens, err_ene_dens, susc, err_susc, G_pm, err_G_pm, C, err_C, U, err_U, corr_len, err_corr_len = np.genfromtxt("./temp.dat", delimiter ="\t", unpack = True)
-
 # PLOT DI CONTROLLO INIZIALE
 if (ctrl_data == True):
     for fname in path_filenames:
@@ -79,12 +80,12 @@ if (ctrl_data == True):
             # aux_L, aux_J, aux_K, aux_ene_sp, aux_err_ene_sp, aux_ene_g, aux_err_ene_g, aux_ene_dens, aux_err_ene_dens, aux_susc, aux_err_susc, aux_G_pm, aux_err_G_pm, aux_C, aux_err_C, aux_U, aux_err_U, aux_corr_len, aux_err_corr_len = np.genfromtxt(infile, delimiter ="\t", unpack = True)
 
             # CUMULANTI K2
-            # fig_1 = pl.figure(1)
-            # pl.errorbar(aux_K[aux_K.argsort()], aux_K2_g[aux_K.argsort()], aux_err_K2_g[aux_K.argsort()], ls='-', marker = 'o', fillstyle = 'none', label = 'L=' + str(int(aux_L[0])) + ' gauge')
+            fig_1 = pl.figure(1)
+            pl.errorbar(aux_K[aux_K.argsort()], aux_K2_g[aux_K.argsort()], aux_err_K2_g[aux_K.argsort()], ls='-', marker = 'o', fillstyle = 'none', label = 'L=' + str(int(aux_L[0])) + ' gauge')
             # pl.errorbar(aux_K[aux_K.argsort()], aux_K2_sp[aux_K.argsort()], aux_err_K2_sp[aux_K.argsort()], ls='-', marker = 'o', fillstyle = 'none', label = 'L=' + str(int(aux_L[0])) + ' spin')
-            # pl.xlabel(r'$\kappa$')
-            # pl.ylabel(r'$K_{2}$')
-            # pl.legend()
+            pl.xlabel(r'$\kappa$')
+            pl.ylabel(r'$K_{2}$')
+            pl.legend()
 
             # CALORE SPECIFICO
             # fig_2 = pl.figure(2)
@@ -95,22 +96,22 @@ if (ctrl_data == True):
 
             # # CUMULANTE K2 RISCALATO
             fig_2 = pl.figure(2)
-            pl.errorbar((aux_K - kc_init)*(aux_L)**(y_init), aux_K2_g/(aux_L**(2*y_init)), aux_err_K2_g/(aux_L**(2*y_init)), ls='', marker = 'o', fillstyle = 'none', label = 'L=' + str(int(aux_L[0])))
+            pl.errorbar((aux_K[aux_K.argsort()] - kc_init)*(aux_L[aux_K.argsort()])**(y_init), aux_K2_g[aux_K.argsort()]/(aux_L[aux_K.argsort()]**(2*y_init)), aux_err_K2_g[aux_K.argsort()]/(aux_L[aux_K.argsort()]**(2*y_init)), ls='', marker = 'o', fillstyle = 'none', label = 'L=' + str(int(aux_L[0])))
             pl.xlabel(r'$(\kappa - \kappa_c)L^{y}$')
             pl.ylabel(r'$K_{2g}/L^{2y}$')
             pl.legend()
             #
             # CUMULANTE K3
-            # fig_3 = pl.figure(3)
-            # pl.errorbar(aux_K[aux_K.argsort()], aux_K3_g[aux_K.argsort()], aux_err_K3_g[aux_K.argsort()], ls='-', marker = 'o', fillstyle = 'none', label = 'L=' + str(int(aux_L[0])) + ' gauge')
+            fig_3 = pl.figure(3)
+            pl.errorbar(aux_K[aux_K.argsort()], aux_K3_g[aux_K.argsort()], aux_err_K3_g[aux_K.argsort()], ls='-', marker = 'o', fillstyle = 'none', label = 'L=' + str(int(aux_L[0])) + ' gauge')
             # pl.errorbar(aux_K[aux_K.argsort()], aux_K3_sp[aux_K.argsort()], aux_err_K3_sp[aux_K.argsort()], ls='-', marker = 'o', fillstyle = 'none', label = 'L=' + str(int(aux_L[0])) + ' spin' )
-            # pl.xlabel(r'$\kappa$')
-            # pl.ylabel(r'$K_{3}$')
-            # pl.legend()
+            pl.xlabel(r'$\kappa$')
+            pl.ylabel(r'$K_{3}$')
+            pl.legend()
 
             # # CUMULANTE K3 RISCALATO
             fig_4 = pl.figure(4)
-            pl.errorbar((aux_K - kc_init)*(aux_L)**(y_init), aux_K3_g/(aux_L**(3*y_init)), aux_err_K3_g/(aux_L**(3*y_init)), ls='', marker = 'o', fillstyle = 'none', label = 'L=' + str(int(aux_L[0])))
+            pl.errorbar((aux_K[aux_K.argsort()] - kc_init)*(aux_L[aux_K.argsort()])**(y_init), aux_K3_g[aux_K.argsort()]/(aux_L[aux_K.argsort()]**(3*y_init)), aux_err_K3_g/(aux_L[aux_K.argsort()]**(3*y_init)), ls='', marker = 'o', fillstyle = 'none', label = 'L=' + str(int(aux_L[0])))
             pl.xlabel(r'$(\kappa - \kappa_c)L^{y}$')
             pl.ylabel(r'$K_{3g}/L^{3y}$')
             pl.legend()
@@ -131,9 +132,9 @@ if (ctrl_K2_g == True):
     omega_max = 1.0
     omega_step = 0.05
 
-    eps = 100
+    eps = 3
 
-    plot_params_K2, n_term1_K2, n_term2_K2, n_term3_K2, omega_plot_K2, mean_Kc_K2, std_Kc_K2, mean_yk_K2, std_yk_K2, mean_chisq_red_K2 = K2_analysis_corrections(k_min, k_max, l_min, n_term_min, n_term_max, omega_min, omega_max, omega_step, eps, kc_init, y_init)
+    plot_params_K2, n_term1_K2, n_term2_K2, n_term3_K2, omega_plot_K2, mean_Kc_K2, std_Kc_K2, mean_yk_K2, std_yk_K2, mean_chisq_red_K2, mean_theta2, std_theta2 = K2_analysis_corrections(k_min, k_max, l_min, n_term_min, n_term_max, omega_min, omega_max, omega_step, eps, popt_K2[0], y_init, shift)
 
     # STAMPO I RISULTATI
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -152,7 +153,7 @@ if (ctrl_K2_g == True):
     print("-----------------------------------------------------")
     print("Kc (medio) = %f +- %f" % (mean_Kc_K2, std_Kc_K2))
     print("y_k (medio) = %f +- %f" % (mean_yk_K2, std_yk_K2))
-    # print("theta_2 (medio) = %f +- %f" % (mean_theta2, std_theta2))
+    print("theta_2 (medio) = %f +- %f" % (mean_theta2, std_theta2))
     print("red_chisq = %f" % (mean_chisq_red_K2))
     print("omega = %f" % (omega_plot_K2))
     print("termini polinomio senza correzione %d" % (n_term1_K2))
@@ -165,8 +166,7 @@ if (ctrl_K2_g == True):
 
     for fname in path_filenames:
         with open(fname) as infile:
-            # aux_L, aux_J, aux_K, aux_ene_sp, aux_err_ene_sp, aux_ene_g, aux_err_ene_g, aux_ene_dens, aux_err_ene_dens, aux_susc, aux_err_susc, aux_G_pm, aux_err_G_pm, aux_C, aux_err_C, aux_U, aux_err_U, aux_corr_len, aux_err_corr_len, aux_K2_g, aux_err_K2_g, aux_K2_sp, aux_err_K2_sp, aux_K3_g, aux_err_K3_g, aux_K3_sp, aux_err_K3_sp = np.genfromtxt(infile, delimiter ="\t", unpack = True)
-            aux_L, aux_J, aux_K, aux_ene_sp, aux_err_ene_sp, aux_ene_g, aux_err_ene_g, aux_ene_dens, aux_err_ene_dens, aux_susc, aux_err_susc, aux_G_pm, aux_err_G_pm, aux_C, aux_err_C, aux_U, aux_err_U, aux_corr_len, aux_err_corr_len = np.genfromtxt(infile, delimiter ="\t", unpack = True)
+            aux_L, aux_J, aux_K, aux_ene_sp, aux_err_ene_sp, aux_ene_g, aux_err_ene_g, aux_ene_dens, aux_err_ene_dens, aux_susc, aux_err_susc, aux_G_pm, aux_err_G_pm, aux_C, aux_err_C, aux_U, aux_err_U, aux_corr_len, aux_err_corr_len, aux_K2_g, aux_err_K2_g, aux_K2_sp, aux_err_K2_sp, aux_K3_g, aux_err_K3_g, aux_K3_sp, aux_err_K3_sp = np.genfromtxt(infile, delimiter ="\t", unpack = True)
 
             c = next(c_cycle)
             m = next(m_cycle)
@@ -186,48 +186,47 @@ if (ctrl_K2_g == True):
             pl.legend()
 
 if (ctrl_K3_g == True):
-    popt_K3, err_opt_K3, n_term_K3, red_chisq_opt_K3 = K3_analysis(k_min, k_max, l_min, n_term_min, n_term_max, kc_init, y_init)
-
-    omega_min = 0.5
-    omega_max = 1.0
-    omega_step = 0.05
-
-    eps = 100
-
-    plot_params_K3, n_term1_K3, n_term2_K3, n_term3_K3, omega_plot_K3, mean_Kc_K3, std_Kc_K3, mean_yk_K3, std_yk_K3, mean_chisq_red_K3 = K3_analysis_corrections(k_min, k_max, l_min, n_term_min, n_term_max, omega_min, omega_max, omega_step, eps, kc_init, y_init)
-
-    # STAMPO I RISULTATI
-    os.system('cls' if os.name == 'nt' else 'clear')
-    print("-----------------------------------------------------")
-    print("K3: RISULTATI SENZA CORREZIONE")
-    print("-----------------------------------------------------")
-    print("Kc = %f +- %f" % (popt_K3[0], err_opt_K3[0]))
-    print("y_k = %f +- %f" % (popt_K3[1], err_opt_K3[1]))
-    print("theta_2 = %f +- %f" % (popt_K3[2], err_opt_K3[2]))
-    print("red_chisq = %f" % (red_chisq_opt_K3))
-    print("termini polinomio %d" % (n_term_K3))
-    print("-----------------------------------------------------")
-
-    print("-----------------------------------------------------")
-    print("K3: RISULTATI CON CORREZIONE")
-    print("-----------------------------------------------------")
-    print("Kc (medio) = %f +- %f" % (mean_Kc_K3, std_Kc_K3))
-    print("y_k (medio) = %f +- %f" % (mean_yk_K3, std_yk_K3))
-    # print("theta_2 (medio) = %f +- %f" % (mean_theta2, std_theta2))
-    print("red_chisq = %f" % (mean_chisq_red_K3))
-    print("omega = %f" % (omega_plot_K3))
-    print("termini polinomio senza correzione %d" % (n_term1_K3))
-    print("termini polinomio con correzione %d" % (n_term2_K3))
-    print("termini polinomio parte di background %d" % (n_term3_K3))
-    print("-----------------------------------------------------")
+    # popt_K3, err_opt_K3, n_term_K3, red_chisq_opt_K3 = K3_analysis(k_min, k_max, l_min, n_term_min, n_term_max, kc_init, y_init)
+    #
+    # omega_min = 0.1
+    # omega_max = 1.0
+    # omega_step = 0.01
+    #
+    # eps = 80
+    #
+    # plot_params_K3, n_term1_K3, n_term2_K3, omega_plot_K3, mean_Kc_K3, std_Kc_K3, mean_yk_K3, std_yk_K3, mean_theta3, std_theta3, mean_chisq_red_K3 = K3_analysis_corrections(k_min, k_max, l_min, n_term_min, n_term_max, omega_min, omega_max, omega_step, eps, kc_init, y_init, shift)
+    #
+    # # STAMPO I RISULTATI
+    # os.system('cls' if os.name == 'nt' else 'clear')
+    # print("-----------------------------------------------------")
+    # print("K3: RISULTATI SENZA CORREZIONE")
+    # print("-----------------------------------------------------")
+    # print("Kc = %f +- %f" % (popt_K3[0], err_opt_K3[0]))
+    # print("y_k = %f +- %f" % (popt_K3[1], err_opt_K3[1]))
+    # print("theta_3 = %f +- %f" % (popt_K3[2], err_opt_K3[2]))
+    # print("red_chisq = %f" % (red_chisq_opt_K3))
+    # print("termini polinomio %d" % (n_term_K3))
+    # print("-----------------------------------------------------")
+    #
+    # print("-----------------------------------------------------")
+    # print("K3: RISULTATI CON CORREZIONE")
+    # print("-----------------------------------------------------")
+    # print("Kc (medio) = %f +- %f" % (mean_Kc_K3, std_Kc_K3))
+    # print("y_k (medio) = %f +- %f" % (mean_yk_K3, std_yk_K3))
+    # print("theta_3 (medio) = %f +- %f" % (mean_theta3, std_theta3))
+    # print("red_chisq = %f" % (mean_chisq_red_K3))
+    # print("omega = %f" % (omega_plot_K3))
+    # print("termini polinomio senza correzione %d" % (n_term1_K3))
+    # print("termini polinomio con correzione %d" % (n_term2_K3))
+    # # print("termini polinomio parte di background %d" % (n_term3_K3))
+    # print("-----------------------------------------------------")
 
     # PLOT DI VERIFICA
     c_cycle, m_cycle = set_style()
 
     for fname in path_filenames:
         with open(fname) as infile:
-            # aux_L, aux_J, aux_K, aux_ene_sp, aux_err_ene_sp, aux_ene_g, aux_err_ene_g, aux_ene_dens, aux_err_ene_dens, aux_susc, aux_err_susc, aux_G_pm, aux_err_G_pm, aux_C, aux_err_C, aux_U, aux_err_U, aux_corr_len, aux_err_corr_len, aux_K2_g, aux_err_K2_g, aux_K2_sp, aux_err_K2_sp, aux_K3_g, aux_err_K3_g, aux_K3_sp, aux_err_K3_sp = np.genfromtxt(infile, delimiter ="\t", unpack = True)
-            aux_L, aux_J, aux_K, aux_ene_sp, aux_err_ene_sp, aux_ene_g, aux_err_ene_g, aux_ene_dens, aux_err_ene_dens, aux_susc, aux_err_susc, aux_G_pm, aux_err_G_pm, aux_C, aux_err_C, aux_U, aux_err_U, aux_corr_len, aux_err_corr_len = np.genfromtxt(infile, delimiter ="\t", unpack = True)
+            aux_L, aux_J, aux_K, aux_ene_sp, aux_err_ene_sp, aux_ene_g, aux_err_ene_g, aux_ene_dens, aux_err_ene_dens, aux_susc, aux_err_susc, aux_G_pm, aux_err_G_pm, aux_C, aux_err_C, aux_U, aux_err_U, aux_corr_len, aux_err_corr_len, aux_K2_g, aux_err_K2_g, aux_K2_sp, aux_err_K2_sp, aux_K3_g, aux_err_K3_g, aux_K3_sp, aux_err_K3_sp = np.genfromtxt(infile, delimiter ="\t", unpack = True)
 
             c = next(c_cycle)
             m = next(m_cycle)
@@ -241,10 +240,11 @@ if (ctrl_K3_g == True):
 
             # CUMULANTE K3 RISCALATO
             fig_2 = pl.figure(2)
-            pl.errorbar((aux_K - mean_Kc_K3)*(aux_L)**(mean_yk_K3), aux_K3_g/(aux_L**(3*mean_yk_K3)), aux_err_K3_g/(aux_L**(3*mean_yk_K3)), ls='', fillstyle = 'none', color = c, marker = m, label = 'L=' + str(int(aux_L[0])))
-            pl.xlabel(r'$(\kappa - \kappa_c)L^{y}$')
-            pl.ylabel(r'$K_{3g}/L^{3y}$')
+            pl.errorbar((aux_K - 0.2996)*(aux_L)**(1.52), aux_K3_g/(aux_L**(3*1.52)), aux_err_K3_g/(aux_L**(3*1.52)), ls='', fillstyle = 'none', color = c, marker = m, label = 'L=' + str(int(aux_L[0])))
+            pl.xlabel(r'$(\kappa - \kappa_c)L^{1/\nu}$')
+            pl.ylabel(r'$K_{3g}/L^{3/\nu}$')
             pl.legend()
+            pl.savefig('./grafici/discreto/J_0.2/K3g.png')
 
 
 pl.show()

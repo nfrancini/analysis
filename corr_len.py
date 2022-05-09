@@ -46,7 +46,7 @@ def xi_analysis(j_min, j_max, l_min, n_term_min, n_term_max, jc_init, nu_init):
     for n_term in tqdm(range(n_term_min, n_term_max), desc = 'xi_fit_no_corrections'):
         inf_bounds = -np.ones(n_term)*100
         sup_bounds = np.ones(n_term)*100
-        popt, pcov = curve_fit(poly, (sorted_J,sorted_L), sorted_corr_len/sorted_L, p0 = initParam, sigma =sorted_err_corr_len/sorted_L, absolute_sigma = True, bounds = ((0.700, 0.700, *inf_bounds), (0.720, 0.720, *sup_bounds)))
+        popt, pcov = curve_fit(poly, (sorted_J,sorted_L), sorted_corr_len/sorted_L, p0 = initParam, sigma =sorted_err_corr_len/sorted_L, absolute_sigma = True, bounds = ((0.230, 0.400, *inf_bounds), (0.260, 0.800, *sup_bounds)))
 
         initParam = popt
         initParam = np.append(initParam, 0.5)
@@ -111,13 +111,14 @@ def xi_analysis_corrections(j_min, j_max, l_min, l_max, n_term_min, n_term_max, 
 
     c = np.zeros(n_term_min+n_term_min-shift, dtype = 'float')
     initParam = [jc_init, nu_init, *c]
+
     for omega in tqdm(np.arange(omega_min, omega_max, omega_step), desc = 'xi_fit_w_corrections'):
         for n_term1 in range(n_term_min, n_term_max):
             for n_term2 in range(n_term_min-shift, n_term_max-shift):
                 # print(omega, n_term1, n_term2)
                 inf_bounds = -np.ones(n_term1 + n_term2)*100
                 sup_bounds = np.ones(n_term1 + n_term2)*100
-                popt, pcov = curve_fit(poly_corrections, (sorted_J,sorted_L), sorted_corr_len/sorted_L, p0 = initParam, sigma = sorted_err_corr_len/L, absolute_sigma = True, bounds = ((0.700, 0.710, *inf_bounds), (0.720, 0.720, *sup_bounds)))
+                popt, pcov = curve_fit(poly_corrections, (sorted_J,sorted_L), sorted_corr_len/sorted_L, p0 = initParam, sigma = sorted_err_corr_len/L, absolute_sigma = True, bounds = ((0.254, 0.30, *inf_bounds), (0.258, 0.50, *sup_bounds)))
 
                 initParam = popt
                 initParam = np.append(initParam, 0.0)
@@ -144,6 +145,7 @@ def xi_analysis_corrections(j_min, j_max, l_min, l_max, n_term_min, n_term_max, 
 
         c = np.ones(n_term_min+n_term_min-shift, dtype = 'float')/3.0
         initParam = [jc_init, nu_init, *c]
+
 
     # PARAMETRI OTTIMALI DA RESTITUIRE
     # NEI PASSI SEGUENTI TENGO CONTO
