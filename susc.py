@@ -25,6 +25,7 @@ def susc_analysis(j_min, j_max, l_min, n_term_min, n_term_max, eta_init):
     susc = susc[mask]
     err_susc = err_susc[mask]
     err_corr_len = err_corr_len[mask]
+    J = J[mask]
 
     sorted_L = L[J.argsort()]
     sorted_corr_len = corr_len[J.argsort()]
@@ -99,6 +100,7 @@ def susc_analysis_corrections(j_min, j_max, l_min, n_term_min, n_term_max, shift
     susc = susc[mask]
     err_susc = err_susc[mask]
     err_corr_len = err_corr_len[mask]
+    J = J[mask]
 
     sorted_L = L[J.argsort()]
     sorted_corr_len = corr_len[J.argsort()]

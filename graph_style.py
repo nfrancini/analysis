@@ -5,8 +5,8 @@ from cycler import cycler
 
 
 def set_style():
-    color_cycler = iter(['black', 'red', 'blue', 'green'])
-    marker_cycler = iter(['s', 'o', '^', 'v'])
+    color_cycler = iter(['black', 'red', 'blue', 'green', 'orange'])
+    marker_cycler = iter(['s', 'o', '^', 'v', '>'])
 
     pl.rc('text', usetex = True)
     pl.rc('font', family = 'serif', size = 15)
